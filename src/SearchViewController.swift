@@ -8,7 +8,9 @@ fileprivate enum ViewConstants {
     static let spacing40: CGFloat = 40
 }
 
-class SearchViewController: NSViewController, NSTextFieldDelegate {
+class SearchViewController: NSViewController, NSTextFieldDelegate,
+    NSPopoverDelegate
+{
     fileprivate static let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
         category: String(describing: SearchViewController.self)
@@ -16,10 +18,17 @@ class SearchViewController: NSViewController, NSTextFieldDelegate {
 
     var foundProgram: Program? = nil
 
+    private var settingsPopover: NSPopover = {
+        let popover = NSPopover()
+        popover.contentViewController = SettingsViewController()
+        popover.behavior = .transient
+        return popover
+    }()
+
     private var appIconImage: NSImageView = {
-        //let image = NSImageView(image: NSApp.applicationIconImage)
         let image = NSImageView()
-        image.image = NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
+        image.image = 
+            NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
         image.imageScaling = .scaleAxesIndependently
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
@@ -40,14 +49,17 @@ class SearchViewController: NSViewController, NSTextFieldDelegate {
         textField.isBezeled = false
         textField.drawsBackground = false
         textField.alignment = .left
-        textField.font = NSFont.systemFont(ofSize: NSFontDescriptor.preferredFontDescriptor(forTextStyle: .body).pointSize, weight: .bold)
+        textField.font = NSFont.systemFont(
+            ofSize: NSFontDescriptor.preferredFontDescriptor(
+                forTextStyle: .body).pointSize, weight: .bold)
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
 
     private var settingsButton: NSButton = {
         let button = NSButton()
-        button.image = systemImage("gearshape.fill", .title2, .large, .init(paletteColors: [.white, .systemRed]))
+        button.image = systemImage("gearshape.fill", .title2, .large,
+            .init(paletteColors: [.white, .systemRed]))
         button.isBordered = false
         button.action = #selector(openSettings)
         button.sizeToFit()
@@ -55,7 +67,6 @@ class SearchViewController: NSViewController, NSTextFieldDelegate {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-
 
     private func addSubviews() {
         view.addSubview(appIconImage)
@@ -67,29 +78,50 @@ class SearchViewController: NSViewController, NSTextFieldDelegate {
     private func setConstraints() {
         NSLayoutConstraint.activate([
             appIconImage.widthAnchor.constraint(equalToConstant: 70),
-            appIconImage.heightAnchor.constraint(equalTo: appIconImage.widthAnchor, multiplier: 1),
+            appIconImage.heightAnchor.constraint(
+                equalTo: appIconImage.widthAnchor, multiplier: 1),
 
-            appIconImage.topAnchor.constraint(equalTo: view.topAnchor, constant: ViewConstants.spacing20),
-            appIconImage.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -ViewConstants.spacing10),
-            appIconImage.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: ViewConstants.spacing10),
+            appIconImage.topAnchor.constraint(equalTo: view.topAnchor,
+                constant: ViewConstants.spacing20),
+            appIconImage.bottomAnchor.constraint(
+                equalTo: view.bottomAnchor,
+                constant: -ViewConstants.spacing10),
+            appIconImage.leadingAnchor.constraint(
+                equalTo: view.leadingAnchor,
+                constant: ViewConstants.spacing10),
 
             searchInput.widthAnchor.constraint(equalToConstant: 300),
-            searchInput.topAnchor.constraint(equalTo: appIconImage.topAnchor),
-            searchInput.leadingAnchor.constraint(equalTo: appIconImage.trailingAnchor, constant: ViewConstants.spacing10),
+            searchInput.topAnchor.constraint(
+                equalTo: appIconImage.topAnchor),
+            searchInput.leadingAnchor.constraint(
+                equalTo: appIconImage.trailingAnchor,
+                constant: ViewConstants.spacing10),
 
-            settingsButton.firstBaselineAnchor.constraint(equalTo: searchInput.firstBaselineAnchor),
-            settingsButton.leadingAnchor.constraint(equalTo: searchInput.trailingAnchor, constant: ViewConstants.spacing10),
-            settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -ViewConstants.spacing10),
+            settingsButton.firstBaselineAnchor.constraint(
+                equalTo: searchInput.firstBaselineAnchor),
+            settingsButton.leadingAnchor.constraint(
+                equalTo: searchInput.trailingAnchor,
+                constant: ViewConstants.spacing10),
+            settingsButton.trailingAnchor.constraint(
+                equalTo: view.trailingAnchor,
+                constant: -ViewConstants.spacing10),
 
-            programsLabel.topAnchor.constraint(equalTo: searchInput.bottomAnchor, constant: ViewConstants.spacing10),
-            programsLabel.leadingAnchor.constraint(equalTo: appIconImage.trailingAnchor, constant: ViewConstants.spacing10),
-            programsLabel.trailingAnchor.constraint(equalTo: searchInput.trailingAnchor),
+            programsLabel.topAnchor.constraint(
+                equalTo: searchInput.bottomAnchor,
+                constant: ViewConstants.spacing10),
+            programsLabel.leadingAnchor.constraint(
+                equalTo: appIconImage.trailingAnchor,
+                constant: ViewConstants.spacing10),
+            programsLabel.trailingAnchor.constraint(
+                equalTo: searchInput.trailingAnchor),
 
         ])
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        settingsPopover.delegate = self
 
         searchInput.delegate = self
 
@@ -101,27 +133,39 @@ class SearchViewController: NSViewController, NSTextFieldDelegate {
         super.viewDidAppear()
 
         self.view.window?.center()
+
+        // searchInput should select all text whenever window appears.
+        NSApp.sendAction(#selector(NSResponder.selectAll(_:)),
+            to: nil, from: self)
     }
 
     override func loadView() {
         self.view = NSView()
     }
 
-    //private func fetchIcon() {
-    //    for key in resultPaths.keys {
-    //    }
-    //}
-
     @objc
-    private func openSettings() {
+    func openSettings() {
+        // HACK: This is an interseting behavior. When NSPopover appears 
+        //       the first time, it always displays in the wrong location;
+        //       however, showing it twice does result in the right
+        //       location.
+        settingsPopover.show(relativeTo: settingsButton.bounds,
+            of: settingsButton, preferredEdge: .maxY)
+        settingsPopover.show(relativeTo: settingsButton.bounds,
+            of: settingsButton, preferredEdge: .maxY)
     }
 
     func controlTextDidChange(_ obj: Notification) {
+        guard let searchInput = obj.object as? EditableNSTextField
+        else { return }
+
         var list = ""
 
-        let programs = delegate.programs
+        let programs = PathManager.shared.programs
         for program in programs {
-            if program.name.lowercased().contains(searchInput.stringValue.lowercased()) {
+            if program.name.lowercased().contains(
+                searchInput.stringValue.lowercased())
+            {
                 if !list.isEmpty {
                     list += ", "
                 }
@@ -134,42 +178,60 @@ class SearchViewController: NSViewController, NSTextFieldDelegate {
         }
         
         if let program = foundProgram {
-            programsLabel.stringValue = program.name + program.ext
+            programsLabel.stringValue =
+                program.name + program.ext + " (\(program.path))"
 
-            let url = URL(fileURLWithPath: program.path).appendingPathComponent(program.name+program.ext)
+            let url = URL(fileURLWithPath: program.path)
+                .appendingPathComponent(program.name+program.ext)
             appIconImage.image = NSWorkspace.shared.icon(forFile: url.path)
         } else {
             programsLabel.stringValue = ""
 
-            appIconImage.image = NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
+            appIconImage.image =
+                NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
         }
     }
 
-    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+    func control(_ control: NSControl, textView: NSTextView,
+        doCommandBy commandSelector: Selector) -> Bool
+    {
         if commandSelector == #selector(NSResponder.insertNewline(_:)) {
             if let program = foundProgram {
-                let url = URL(fileURLWithPath: program.path).appendingPathComponent(program.name+program.ext)
+                let url = URL(fileURLWithPath: program.path)
+                    .appendingPathComponent(program.name+program.ext)
                 let config = NSWorkspace.OpenConfiguration()
-                NSWorkspace.shared.openApplication(at: url, configuration: config, completionHandler: { [weak self] application, error in
+
+                NSWorkspace.shared.openApplication(at: url,
+                    configuration: config)
+                { [weak self] application, error in
                     if let error = error {
-                        Self.logger.debug("Failed to open application: \(error.localizedDescription)")
+                        Self.logger.debug("\(error.localizedDescription)")
                     } else {
-                        Self.logger.debug("Application opened successfully")
+                        Self.logger.debug("Program opened successfully")
                         DispatchQueue.main.async {
                             if let window = self?.view.window {
                                 window.resignKey()
                             }
                         }
                     }
-                })
+                }
             }
-            // TODO: Send this whenever SearchViewController becomes visible.
-            NSApp.sendAction(#selector(NSResponder.selectAll(_:)), to: nil, from: self)
+            NSApp.sendAction(#selector(NSResponder.selectAll(_:)),
+                to: nil, from: self)
+
             return true
         } else if commandSelector == #selector(NSResponder.insertTab(_:)) {
             return true
         }
 
         return false
+    }
+
+    func popoverWillShow(_ notification: Notification) {
+        searchInput.abortEditing()
+    }
+
+    func popoverWillClose(_ notification: Notification) {
+        searchInput.becomeFirstResponder()
     }
 }

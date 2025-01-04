@@ -15,12 +15,14 @@ fileprivate func handleGlobalEvents(proxy: CGEventTapProxy,
         case .keyDown:
             //logger.debug(".keyDown")
 
-            if (event.flags.rawValue & CGEventFlags.maskAlternate.rawValue) == CGEventFlags.maskAlternate.rawValue &&
-               (event.flags.rawValue & (CGEventFlags.maskShift.rawValue | CGEventFlags.maskControl.rawValue | CGEventFlags.maskCommand.rawValue)) == 0 {
-                logger.debug("maskAlternate")
-            }
+            let keyCode = "keyCode: \(event.getIntegerValueField(.keyboardEventKeycode))"
+            logger.debug("\(keyCode, privacy: .public)")
 
-            logger.debug("Option rawValue=\(CGEventFlags.maskAlternate.rawValue)")
+            //if (event.flags.rawValue & CGEventFlags.maskAlternate.rawValue) == CGEventFlags.maskAlternate.rawValue &&
+            //   (event.flags.rawValue & (CGEventFlags.maskShift.rawValue | CGEventFlags.maskControl.rawValue | CGEventFlags.maskCommand.rawValue)) == 0 {
+            //    logger.debug("maskAlternate")
+            //}
+            //logger.debug("Option rawValue=\(CGEventFlags.maskAlternate.rawValue)")
 
             // var keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             //if keyCode == 49 {

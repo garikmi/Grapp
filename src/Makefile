@@ -9,6 +9,8 @@ EXEC = Grapp
 
 SRCMODULES = Helpers.swift EditableNSTextField.swift EventMonitor.swift \
 	GlobalEventTap.swift PopoverPanel.swift SearchViewController.swift \
+	SettingsViewController.swift HotKeyManager.swift \
+	KeyDetectorButton.swift PathManager.swift MyTableCellView.swift \
 	AppDelegate.swift main.swift
 ARMOBJMODULES = $(addprefix ./arm64/,$(SRCMODULES:.swift=.o))
 X86OBJMODULES = $(addprefix ./x86_64/,$(SRCMODULES:.swift=.o))
@@ -17,17 +19,24 @@ LIBS =
 
 FRAMEWORKS = -framework AppKit -framework ServiceManagement
 
+# HACK: Target is getting touched because timestamps of the generated
+#       object file don't change unless there's an actual change in the
+#       outputted object code. This results in this target running every
+#       single time. I'm not sure whether that's the exact reason, but
+#       I can't imagine why timestamps wouldn't change. When clang
+#       generates same exact executable, timestamps do change.
 ./arm64/%.o: %.swift
 	swift -frontend -c -target arm64-apple-macos$(MACOS_VERSION) $(FLAGS) \
 	-primary-file $< $(filter-out $<, $(SRCMODULES)) $(LIBS) $(FRAMEWORKS) -sdk $(SDK) \
 		-module-name $(EXEC) -o $@ -emit-module
-
+	@touch $@
 
 ifdef UNIVERSAL
 ./x86_64/%.o: %.swift
 	@swift -frontend -c -target x86_64-apple-macos$(MACOS_VERSION) \
 		$(FLAGS) -primary-file $< $(filter-out $<, $(SRCMODULES)) $(LIBS) $(FRAMEWORKS) \
 		-sdk $(SDK) -module-name $(EXEC) -o $@ -emit-module
+	@touch $@
 endif
 
 ./arm64/$(EXEC): $(ARMOBJMODULES)

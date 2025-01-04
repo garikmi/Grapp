@@ -13,7 +13,7 @@ class EventMonitor {
     }
     
     func start() {
-        fatalError("start must be implemented by a subclass of EventMonitor")
+        fatalError("start must be implemented by a subclass")
     }
     
     func stop() {
@@ -35,7 +35,8 @@ final class LocalEventMonitor: EventMonitor {
     }
     
     override func start() {
-        monitor = NSEvent.addLocalMonitorForEvents(matching: mask, handler: handler)
+        monitor = NSEvent.addLocalMonitorForEvents(matching: mask,
+                                                   handler: handler)
     }
 }
 
@@ -50,6 +51,7 @@ final class GlobalEventMonitor: EventMonitor {
     }
     
     override func start() {
-        monitor = NSEvent.addGlobalMonitorForEvents(matching: mask, handler: handler)
+        monitor = NSEvent.addGlobalMonitorForEvents(matching: mask,
+                                                    handler: handler)
     }
 }

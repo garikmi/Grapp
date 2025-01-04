@@ -3,28 +3,11 @@ import Carbon
 import ServiceManagement
 import OSLog
 
-struct Program {
-    let path: String
-    let name: String
-    let ext: String
-}
-
-func appActivatedHandler(nextHandler: EventHandlerCallRef?, theEvent: EventRef?, userData: UnsafeMutableRawPointer?) -> OSStatus {
-    print("App was activated!")
-    return noErr
-}
-
 class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     fileprivate static let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
         category: String(describing: AppDelegate.self)
     )
-
-    var paths = ["/Applications", "/System/Applications",
-                 "/System/Applications/Utilities",
-                 "/Applications/Xcode.app/Contents/Applications",
-                 "/System/Library/CoreServices/Applications"]
-    var programs: [Program] = []
 
     let fileManager = FileManager.default
 
@@ -33,45 +16,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.logger.debug("applicationDidFinishLaunching")
 
-        NSRunningApplication.current.hide()
+        PathManager.shared.rebuildIndex()
 
         window.delegate = self
 
-        //GlobalEventTap.shared.enable()
-
-        for path in paths {
-            do {
-                let items = try fileManager.contentsOfDirectory(atPath: path)
-                for item in items {
-                    let name = String(item.dropLast(4))
-                    if item.hasSuffix(".app") {
-                        if !programs.contains(where: { name == $0.name }) {
-                            programs.append(Program(path: path, name: name, ext: ".app"))
-                        }
-                    }
-                }
-            } catch {
-                print("Error reading directory: \(error.localizedDescription)")
-            }
-        }
-
         window.makeKeyAndOrderFront(nil)
 
-        // TODO: Implement Unregister and Uninstall.
-        // TODO: A user should be able to enter hot keys to trigger.
-        //       We either can use local event monitor or let user choose
-        //       from list.
-        var hotKeyRef: EventHotKeyRef?
-        let hotKeyID: EventHotKeyID = EventHotKeyID(signature: OSType("grap".fourCharCodeValue), id: 1)
-
-        // GetEventDispatcherTarget
-        var err = RegisterEventHotKey(UInt32(kVK_Space), UInt32(optionKey), hotKeyID, GetApplicationEventTarget(), UInt32(kEventHotKeyNoOptions), &hotKeyRef)
-        //let handler = NewEventHandlerUPP()
-
-        // Handler get executed on main thread.
-        let handler: EventHandlerUPP = { (inHandlerCallRef, inEvent, inUserData) -> OSStatus in
+        HotKeyManager.shared.handler =
+        { (inHandlerCallRef, inEvent, inUserData) -> OSStatus in
             AppDelegate.logger.debug("Shortcut handler fired off.")
-            if let delegate = NSApplication.shared.delegate as? AppDelegate {
+            if let delegate =
+                NSApplication.shared.delegate as? AppDelegate
+            {
                 let window = delegate.window
                 if window.isKeyWindow {
                     window.resignKey()
@@ -79,24 +35,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
                     window.makeKeyAndOrderFront(nil)
                 }
             }
-
             return noErr
         }
-        var eventHandlerRef: EventHandlerRef? = nil
 
-        if err == noErr {
-            Self.logger.debug("Registered hot key.")
-
-            var eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
-            err = InstallEventHandler(GetApplicationEventTarget(), handler, 1, &eventType, nil, &eventHandlerRef)
-
-            if err == noErr {
-                Self.logger.debug("Event handler installed.")
-            } else {
-                Self.logger.debug("Failed to install event handler.")
-            }
+        HotKeyManager.shared.enable()
+        if let code =
+                UserDefaults.standard.object(forKey: "keyCode") as? Int,
+           let mods =
+            UserDefaults.standard.object(forKey: "keyModifiers") as? Int
+        {
+            HotKeyManager.shared.registerHotKey(key: code,
+                modifiers: mods)
         } else {
-            Self.logger.debug("Failed to register hot key.")
+            // NOTE: This is the default shortcut. If you want to change
+            //       it, do not forget to change it in other files
+            //       (SettingsViewController).
+            HotKeyManager.shared.registerHotKey(key: kVK_Space,
+                modifiers: optionKey)
         }
     }
 
@@ -115,7 +70,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
-    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+    func applicationShouldHandleReopen(_ sender: NSApplication,
+        hasVisibleWindows: Bool) -> Bool 
+    {
         Self.logger.debug("Application reopened.")
 
         if !window.isKeyWindow {
@@ -123,6 +80,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
 
         return true
+    }
+
+    public func toggleLaunchAtLogin() {
+        let service = SMAppService.mainApp
+        if service.status == .enabled {
+            try? service.unregister()
+        } else {
+            try? service.register()
+        }
+    }
+
+    public func willLaunchAtLogin() -> Bool {
+        let service = SMAppService.mainApp
+        if service.status == .enabled {
+            return true
+        } else {
+            return false
+        }
     }
 }
 
