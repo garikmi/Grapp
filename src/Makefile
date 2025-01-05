@@ -28,15 +28,13 @@ FRAMEWORKS = -framework AppKit -framework ServiceManagement
 ./arm64/%.o: %.swift
 	swift -frontend -c -target arm64-apple-macos$(MACOS_VERSION) $(FLAGS) \
 	-primary-file $< $(filter-out $<, $(SRCMODULES)) $(LIBS) $(FRAMEWORKS) -sdk $(SDK) \
-		-module-name $(EXEC) -o $@ -emit-module
-	@touch $@
+		-module-name $(EXEC) -o $@ -emit-module && touch $@
 
 ifdef UNIVERSAL
 ./x86_64/%.o: %.swift
 	@swift -frontend -c -target x86_64-apple-macos$(MACOS_VERSION) \
 		$(FLAGS) -primary-file $< $(filter-out $<, $(SRCMODULES)) $(LIBS) $(FRAMEWORKS) \
-		-sdk $(SDK) -module-name $(EXEC) -o $@ -emit-module
-	@touch $@
+		-sdk $(SDK) -module-name $(EXEC) -o $@ -emit-module && touch $@
 endif
 
 ./arm64/$(EXEC): $(ARMOBJMODULES)

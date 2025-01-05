@@ -114,7 +114,6 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
                 constant: ViewConstants.spacing10),
             programsLabel.trailingAnchor.constraint(
                 equalTo: searchInput.trailingAnchor),
-
         ])
     }
 

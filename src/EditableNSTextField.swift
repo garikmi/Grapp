@@ -1,5 +1,4 @@
 import Cocoa
-import os
 
 final class EditableNSTextField: NSTextField {
     private let commandKey = NSEvent.ModifierFlags.command.rawValue
