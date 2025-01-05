@@ -8,7 +8,7 @@ class PopoverPanel: NSPanel {
     )
 
     override var canBecomeKey: Bool { true }
-    
+
     init(viewController: NSViewController) {
         super.init(
             contentRect: CGRect(x: 0, y: 0, width: 100, height: 100),
@@ -18,7 +18,7 @@ class PopoverPanel: NSPanel {
             defer: false
         )
         super.contentViewController = viewController
-        
+
         title = ""
         isMovable = true
         isMovableByWindowBackground = true
@@ -27,13 +27,13 @@ class PopoverPanel: NSPanel {
         level = .statusBar
         titleVisibility = .hidden
         titlebarAppearsTransparent = true
-        
+
         animationBehavior = .none
         collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary,
                               .transient]
         isReleasedWhenClosed = false
         hidesOnDeactivate = false
-        
+
         standardWindowButton(.closeButton)?.isHidden = true
         standardWindowButton(.miniaturizeButton)?.isHidden = true
         standardWindowButton(.zoomButton)?.isHidden = true
@@ -43,24 +43,20 @@ class PopoverPanel: NSPanel {
         Self.logger.debug("performKeyEquivalent keyCode=\(event.keyCode)")
         let commandKey = NSEvent.ModifierFlags.command.rawValue
 
-        // TODO: Make these depend on virtual keycodes, instead of
-        //       characters.
         if event.type == NSEvent.EventType.keyDown {
             if (event.modifierFlags.rawValue &
                 NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
-                == commandKey,
-                event.charactersIgnoringModifiers! == "w"
+                == commandKey, event.keyCode == 13 // W
             {
                 resignKey()
                 return true
             } else if (event.modifierFlags.rawValue &
                 NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
-                == commandKey,
-                event.charactersIgnoringModifiers! == "q"
+                == commandKey, event.keyCode == 12 // Q
             {
                 NSApplication.shared.terminate(self)
                 return true
-            } else if event.keyCode == 53 {
+            } else if event.keyCode == 53 { // ESC
                 resignKey()
                 return true
             }
