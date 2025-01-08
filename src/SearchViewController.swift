@@ -1,22 +1,20 @@
 import AppKit
 import OSLog
 
-fileprivate enum ViewConstants {
-    static let spacing2: CGFloat = 2
-    static let spacing10: CGFloat = 10
-    static let spacing20: CGFloat = 20
-    static let spacing40: CGFloat = 40
-}
-
 class SearchViewController: NSViewController, NSTextFieldDelegate,
-    NSPopoverDelegate
+    NSPopoverDelegate, NSTableViewDataSource, NSTableViewDelegate
 {
     fileprivate static let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
         category: String(describing: SearchViewController.self)
     )
 
-    var foundProgram: Program? = nil
+    private var keyboardEvents: EventMonitor?
+
+    private var foundProgram: Program? = nil
+    private var programsList: [Program] = []
+
+    private var programsTableViewSelection = 0
 
     private var settingsPopover: NSPopover = {
         let popover = NSPopover()
@@ -37,21 +35,11 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     private var searchInput: EditableNSTextField = {
         let textField = EditableNSTextField()
         textField.placeholderString = "Search programs . . ."
+        textField.usesSingleLineMode = false
         textField.bezelStyle = .roundedBezel
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        return textField
-    }()
-
-    private var programsLabel: NSTextField = {
-        let textField = NSTextField()
-        textField.stringValue = ""
-        textField.isEditable = false
-        textField.isBezeled = false
-        textField.drawsBackground = false
-        textField.alignment = .left
         textField.font = NSFont.systemFont(
             ofSize: NSFontDescriptor.preferredFontDescriptor(
-                forTextStyle: .body).pointSize, weight: .bold)
+                forTextStyle: .title3).pointSize, weight: .medium)
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
@@ -68,31 +56,70 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         return button
     }()
 
+    private var tableScrollView: NSScrollView = {
+        let scroll = NSScrollView()
+        scroll.contentInsets = NSEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        scroll.drawsBackground = false
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        return scroll
+    }()
+
+    private var programsTableView: MyNSTableView = {
+        let table = MyNSTableView()
+
+        table.style = NSTableView.Style.plain
+        table.backgroundColor = .clear
+        table.usesAutomaticRowHeights = true
+
+        table.headerView = nil
+        table.allowsMultipleSelection = false
+        table.allowsColumnReordering = false
+        table.allowsColumnResizing = false
+        table.allowsColumnSelection = false
+        table.addTableColumn(NSTableColumn(
+            identifier: NSUserInterfaceItemIdentifier("Program")))
+
+        table.doubleAction = #selector(tableDoubleClick)
+
+        table.translatesAutoresizingMaskIntoConstraints = false
+        return table
+    }()
+
     private func addSubviews() {
         view.addSubview(appIconImage)
         view.addSubview(searchInput)
-        view.addSubview(programsLabel)
         view.addSubview(settingsButton)
+        view.addSubview(tableScrollView)
     }
 
+    var viewBottomAnchorTable: NSLayoutConstraint?
+    var viewBottomAnchorImage: NSLayoutConstraint?
+
     private func setConstraints() {
+        viewBottomAnchorTable = tableScrollView.bottomAnchor.constraint(
+            equalTo: view.bottomAnchor,
+            constant: -ViewConstants.spacing10)
+        viewBottomAnchorImage = appIconImage.bottomAnchor.constraint(
+            equalTo: view.bottomAnchor,
+            constant: -ViewConstants.spacing10)
+
+        viewBottomAnchorTable?.isActive = false
+        viewBottomAnchorImage?.isActive = true
+
         NSLayoutConstraint.activate([
-            appIconImage.widthAnchor.constraint(equalToConstant: 70),
+            appIconImage.widthAnchor.constraint(equalToConstant: 60),
             appIconImage.heightAnchor.constraint(
                 equalTo: appIconImage.widthAnchor, multiplier: 1),
 
             appIconImage.topAnchor.constraint(equalTo: view.topAnchor,
-                constant: ViewConstants.spacing20),
-            appIconImage.bottomAnchor.constraint(
-                equalTo: view.bottomAnchor,
-                constant: -ViewConstants.spacing10),
+                constant: ViewConstants.spacing10),
             appIconImage.leadingAnchor.constraint(
                 equalTo: view.leadingAnchor,
                 constant: ViewConstants.spacing10),
 
             searchInput.widthAnchor.constraint(equalToConstant: 300),
-            searchInput.topAnchor.constraint(
-                equalTo: appIconImage.topAnchor),
+            searchInput.centerYAnchor.constraint(
+                equalTo: appIconImage.centerYAnchor),
             searchInput.leadingAnchor.constraint(
                 equalTo: appIconImage.trailingAnchor,
                 constant: ViewConstants.spacing10),
@@ -106,23 +133,73 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
                 equalTo: view.trailingAnchor,
                 constant: -ViewConstants.spacing10),
 
-            programsLabel.topAnchor.constraint(
-                equalTo: searchInput.bottomAnchor,
+            tableScrollView.heightAnchor.constraint(equalToConstant: 210),
+            tableScrollView.topAnchor.constraint(
+                equalTo: appIconImage.bottomAnchor,
                 constant: ViewConstants.spacing10),
-            programsLabel.leadingAnchor.constraint(
-                equalTo: appIconImage.trailingAnchor,
-                constant: ViewConstants.spacing10),
-            programsLabel.trailingAnchor.constraint(
-                equalTo: searchInput.trailingAnchor),
+            tableScrollView.leadingAnchor.constraint(
+                equalTo: view.leadingAnchor),
+            tableScrollView.trailingAnchor.constraint(
+               equalTo: view.trailingAnchor)
         ])
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        keyboardEvents = LocalEventMonitor(mask: [.keyDown], handler:
+        { [weak self] event in
+            let key = event.keyCode
+            let modifiers = event.modifierFlags.rawValue
+            let command = NSEvent.ModifierFlags.command.rawValue
+            let shift = NSEvent.ModifierFlags.shift.rawValue
+            let control = NSEvent.ModifierFlags.control.rawValue
+            let option = NSEvent.ModifierFlags.option.rawValue
+
+            // TODO: Implement helper functions for modifiers.
+            if let controller = self {
+                if ((modifiers & control) == control &&
+                    (modifiers & (command | shift | option)) == 0 &&
+                    key == 35) || // P
+                    (modifiers & (command | control | shift | option)) == 0 &&
+                    (key == 126) // UP
+                {
+                    controller.programsTableViewSelection -= 1
+                } else if ((modifiers & control) == control &&
+                    (modifiers & (command | shift | option)) == 0 &&
+                    key == 45) || // N
+                    (modifiers & (command | control | shift | option)) == 0 &&
+                    (key == 125) // DOWN
+                {
+                    controller.programsTableViewSelection += 1
+                }
+
+                if controller.programsTableViewSelection >
+                    controller.programsList.count-1
+                {
+                    controller.programsTableViewSelection =
+                        controller.programsList.count-1
+                } else if controller.programsTableViewSelection < 0 {
+                    controller.programsTableViewSelection = 0
+                }
+
+                let select = controller.programsTableViewSelection
+                    self?.programsTableView.selectRowIndexes(
+                        IndexSet(integer: select),
+                        byExtendingSelection: false)
+                    self?.programsTableView.scrollRowToVisible(select)
+            }
+
+            return event
+        })
+
         settingsPopover.delegate = self
 
         searchInput.delegate = self
+
+        tableScrollView.documentView = programsTableView
+        programsTableView.dataSource = self
+        programsTableView.delegate = self
 
         addSubviews()
         setConstraints()
@@ -131,15 +208,35 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     override func viewDidAppear() {
         super.viewDidAppear()
 
-        self.view.window?.center()
+        keyboardEvents?.start()
 
+        view.window?.center()
+
+        view.window?.makeFirstResponder(searchInput)
         // searchInput should select all text whenever window appears.
         NSApp.sendAction(#selector(NSResponder.selectAll(_:)),
             to: nil, from: self)
     }
 
+    override func viewDidDisappear() {
+        super.viewDidDisappear()
+
+        keyboardEvents?.stop()
+    }
+
     override func loadView() {
         self.view = NSView()
+    }
+
+    private func reloadProgramsTableViewData() {
+        if programsList.count > 0 {
+            viewBottomAnchorTable?.isActive = true
+            viewBottomAnchorImage?.isActive = false
+        } else {
+            viewBottomAnchorTable?.isActive = false
+            viewBottomAnchorImage?.isActive = true
+        }
+        programsTableView.reloadData()
     }
 
     @objc
@@ -154,38 +251,71 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
             of: settingsButton, preferredEdge: .maxY)
     }
 
+    @objc
+    private func tableDoubleClick() {
+        let program = programsList[programsTableView.clickedRow]
+        openProgram(program)
+    }
+
+    private func openProgram(_ program: Program) {
+        let url = URL(fileURLWithPath: program.path)
+            .appendingPathComponent(program.name+program.ext)
+        let config = NSWorkspace.OpenConfiguration()
+
+        NSWorkspace.shared.openApplication(at: url,
+            configuration: config)
+        { [weak self] application, error in
+            if let error = error {
+                Self.logger.debug("\(error.localizedDescription)")
+            } else {
+                Self.logger.debug("Program opened successfully")
+                // NOTE: This needs a window! Do not just copy-paste
+                //       this block elsewhere.
+                DispatchQueue.main.async {
+                    if let window = self?.view.window {
+                        window.resignKey()
+                    }
+                }
+            }
+        }
+    }
+
     func controlTextDidChange(_ obj: Notification) {
         guard let searchInput = obj.object as? EditableNSTextField
         else { return }
 
-        var list = ""
-
         let programs = PathManager.shared.programs
-        for program in programs {
+
+        programsList = []
+        for i in programs.indices {
+            var program = programs[i]
+            if programsList.count >= 10 {
+                break
+            }
             if program.name.lowercased().contains(
                 searchInput.stringValue.lowercased())
             {
-                if !list.isEmpty {
-                    list += ", "
-                }
-                list += program.name + program.ext
-                foundProgram = program
-                break
-            } else {
-                foundProgram = nil
+                let url = URL(fileURLWithPath: program.path)
+                    .appendingPathComponent(program.name+program.ext)
+                let image = NSWorkspace.shared.icon(forFile: url.path)
+                program.img = image
+                programsList.append(program)
             }
         }
-        
-        if let program = foundProgram {
-            programsLabel.stringValue =
-                program.name + program.ext + " (\(program.path))"
+        reloadProgramsTableViewData()
 
+        programsTableViewSelection = 0
+        programsTableView.selectRowIndexes(
+            IndexSet(integer: programsTableViewSelection),
+            byExtendingSelection: false)
+        programsTableView.scrollRowToVisible(programsTableViewSelection)
+
+        if programsList.count > 0 {
+            let program = programsList[0]
             let url = URL(fileURLWithPath: program.path)
                 .appendingPathComponent(program.name+program.ext)
             appIconImage.image = NSWorkspace.shared.icon(forFile: url.path)
         } else {
-            programsLabel.stringValue = ""
-
             appIconImage.image =
                 NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
         }
@@ -195,31 +325,18 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         doCommandBy commandSelector: Selector) -> Bool
     {
         if commandSelector == #selector(NSResponder.insertNewline(_:)) {
-            if let program = foundProgram {
-                let url = URL(fileURLWithPath: program.path)
-                    .appendingPathComponent(program.name+program.ext)
-                let config = NSWorkspace.OpenConfiguration()
-
-                NSWorkspace.shared.openApplication(at: url,
-                    configuration: config)
-                { [weak self] application, error in
-                    if let error = error {
-                        Self.logger.debug("\(error.localizedDescription)")
-                    } else {
-                        Self.logger.debug("Program opened successfully")
-                        DispatchQueue.main.async {
-                            if let window = self?.view.window {
-                                window.resignKey()
-                            }
-                        }
-                    }
-                }
-            }
+            let program = programsList[programsTableViewSelection]
+            openProgram(program)
             NSApp.sendAction(#selector(NSResponder.selectAll(_:)),
                 to: nil, from: self)
-
             return true
         } else if commandSelector == #selector(NSResponder.insertTab(_:)) {
+            return true
+        } else if commandSelector == #selector(NSResponder.moveUp(_:)) ||
+            commandSelector == #selector(NSResponder.moveDown(_:))
+        {
+            // Ignore arrows keys up or down because we use those to
+            // navigate the programs list.
             return true
         }
 
@@ -233,4 +350,35 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     func popoverWillClose(_ notification: Notification) {
         searchInput.becomeFirstResponder()
     }
+
+    func numberOfRows(in tableView: NSTableView) -> Int {
+        return programsList.count
+    }
+
+    func tableView(_ tableView: NSTableView,
+        rowViewForRow row: Int) -> NSTableRowView?
+    {
+        return ProgramTableRowView()
+    }
+
+    func tableView(_ tableView: NSTableView,
+        viewFor tableColumn: NSTableColumn?, row: Int) -> NSView?
+    {
+        let cell = ProgramTableViewCell()
+        let program = programsList[row]
+
+        // PERF: This is very slow, even with 10 items on the list! It has
+        //       to be the image of concern. UIKit has reusable cells,
+        //       is that possible? Or is fetching an image is slow?
+        cell.titleField.stringValue = program.name + program.ext
+        cell.progPathLabel.stringValue = program.path
+        cell.appIconImage.image = program.img
+        cell.id = row
+
+        return cell
+    }
+}
+
+final class MyNSTableView: NSTableView {
+    override var acceptsFirstResponder: Bool { false }
 }

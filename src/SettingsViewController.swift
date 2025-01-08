@@ -3,14 +3,6 @@ import Carbon
 import ServiceManagement
 import OSLog
 
-fileprivate enum ViewConstants {
-    static let spacing2: CGFloat = 2
-    static let spacing5: CGFloat = 2
-    static let spacing10: CGFloat = 10
-    static let spacing20: CGFloat = 20
-    static let spacing40: CGFloat = 40
-}
-
 class SettingsViewController: NSViewController, NSTextFieldDelegate,
     KeyDetectorButtonDelegate, NSTableViewDataSource, NSTableViewDelegate,
     MyTableCellViewDelegate
@@ -51,13 +43,13 @@ class SettingsViewController: NSViewController, NSTextFieldDelegate,
 
     private var ctrlButton: NSButton = {
         let button = NSButton()
-            button.title = "⌃"
-            button.action = #selector(handleModifiers)
-            button.setButtonType(.pushOnPushOff)
-            button.sizeToFit()
-            button.bezelStyle = .rounded
-            button.translatesAutoresizingMaskIntoConstraints = false
-            return button
+        button.title = "⌃"
+        button.action = #selector(handleModifiers)
+        button.setButtonType(.pushOnPushOff)
+        button.sizeToFit()
+        button.bezelStyle = .rounded
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }()
 
     private var cmdButton: NSButton = {
@@ -319,8 +311,6 @@ class SettingsViewController: NSViewController, NSTextFieldDelegate,
         recordButton.target = self
 
         pathsTableView.dataSource = self
-        pathsTableView.delegate = self
-
         pathsTableView.delegate = self
 
         pathsControl.target = self

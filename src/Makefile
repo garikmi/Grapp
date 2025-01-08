@@ -11,7 +11,7 @@ SRCMODULES = Helpers.swift EditableNSTextField.swift EventMonitor.swift \
 	GlobalEventTap.swift PopoverPanel.swift SearchViewController.swift \
 	SettingsViewController.swift HotKeyManager.swift \
 	KeyDetectorButton.swift PathManager.swift MyTableCellView.swift \
-	AppDelegate.swift main.swift
+	ProgramTableViewCell.swift AppDelegate.swift main.swift
 ARMOBJMODULES = $(addprefix ./arm64/,$(SRCMODULES:.swift=.o))
 X86OBJMODULES = $(addprefix ./x86_64/,$(SRCMODULES:.swift=.o))
 
@@ -27,19 +27,21 @@ FRAMEWORKS = -framework AppKit -framework ServiceManagement
 #       generates same exact executable, timestamps do change.
 ./arm64/%.o: %.swift
 	swift -frontend -c -target arm64-apple-macos$(MACOS_VERSION) $(FLAGS) \
-	-primary-file $< $(filter-out $<, $(SRCMODULES)) $(LIBS) $(FRAMEWORKS) -sdk $(SDK) \
-		-module-name $(EXEC) -o $@ -emit-module && touch $@
+		-primary-file $< $(filter-out $<, $(SRCMODULES)) $(LIBS) \
+		$(FRAMEWORKS) -sdk $(SDK) -module-name $(EXEC) -o $@ \
+		-emit-module && touch $@
 
 ifdef UNIVERSAL
 ./x86_64/%.o: %.swift
 	@swift -frontend -c -target x86_64-apple-macos$(MACOS_VERSION) \
-		$(FLAGS) -primary-file $< $(filter-out $<, $(SRCMODULES)) $(LIBS) $(FRAMEWORKS) \
-		-sdk $(SDK) -module-name $(EXEC) -o $@ -emit-module && touch $@
+		$(FLAGS) -primary-file $< $(filter-out $<, $(SRCMODULES)) \
+		$(LIBS) $(FRAMEWORKS) -sdk $(SDK) -module-name $(EXEC) -o $@ \
+		-emit-module && touch $@
 endif
 
 ./arm64/$(EXEC): $(ARMOBJMODULES)
-	@ld -syslibroot $(SDK) -lSystem $(FRAMEWORKS) -arch arm64 -macos_version_min \
-		$(MACOS_VERSION).0 \
+	@ld -syslibroot $(SDK) -lSystem $(FRAMEWORKS) -arch arm64 \
+		-macos_version_min $(MACOS_VERSION).0 \
 		/Library/Developer/CommandLineTools/usr/lib/swift/macosx/libswiftCompatibilityPacks.a \
 		-sectcreate __TEXT __info_plist Info.plist \
 		-L /Library/Developer/CommandLineTools/usr/lib/swift/macosx -L \
@@ -51,8 +53,8 @@ endif
 
 ifdef UNIVERSAL
 ./x86_64/$(EXEC): $(X86OBJMODULES)
-	@ld -syslibroot $(SDK) -lSystem $(FRAMEWORKS) -arch x86_64 -macos_version_min \
-		$(MACOS_VERSION).0 \
+	@ld -syslibroot $(SDK) -lSystem $(FRAMEWORKS) -arch x86_64 \
+		-macos_version_min $(MACOS_VERSION).0 \
 		/Library/Developer/CommandLineTools/usr/lib/swift/macosx/libswiftCompatibilityPacks.a \
 		-sectcreate __TEXT __info_plist Info.plist \
 		-L /Library/Developer/CommandLineTools/usr/lib/swift/macosx -L \

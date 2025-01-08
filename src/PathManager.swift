@@ -69,11 +69,13 @@ final class PathManager {
                     atPath: path)
                 for item in items {
                     let name = String(item.dropLast(4))
+
                     if item.hasSuffix(".app") {
                         if !programs.contains(where: { name == $0.name }) {
                             programs.append(
                                 Program(
-                                    path: path, name: name, ext: ".app"))
+                                    path: path, name: name, ext: ".app",
+                                    img: nil))
                         }
                     }
                 }
