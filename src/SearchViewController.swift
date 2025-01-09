@@ -311,10 +311,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         programsTableView.scrollRowToVisible(programsTableViewSelection)
 
         if programsList.count > 0 {
-            let program = programsList[0]
-            let url = URL(fileURLWithPath: program.path)
-                .appendingPathComponent(program.name+program.ext)
-            appIconImage.image = NSWorkspace.shared.icon(forFile: url.path)
+            appIconImage.image = programsList[0].img
         } else {
             appIconImage.image =
                 NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
@@ -370,7 +367,18 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         // PERF: This is very slow, even with 10 items on the list! It has
         //       to be the image of concern. UIKit has reusable cells,
         //       is that possible? Or is fetching an image is slow?
-        cell.titleField.stringValue = program.name + program.ext
+        // searchInput.stringValue
+
+        let app = program.name + program.ext
+        let rangeToHighlight = 
+            (app.lowercased() as NSString)
+                .range(of: searchInput.stringValue.lowercased())
+        let attributedString = NSMutableAttributedString(string: app)
+        attributedString.addAttributes(
+            [.backgroundColor: NSColor.systemOrange],
+            range: rangeToHighlight)
+
+        cell.titleField.attributedStringValue = attributedString
         cell.progPathLabel.stringValue = program.path
         cell.appIconImage.image = program.img
         cell.id = row

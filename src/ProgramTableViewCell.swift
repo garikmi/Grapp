@@ -3,7 +3,7 @@ import AppKit
 class ProgramTableRowView: NSTableRowView {
     override func drawSelection(in dirtyRect: NSRect) {
         if self.selectionHighlightStyle != .none {
-            let selectionColor = NSColor.systemBlue
+            let selectionColor = NSColor.controlAccentColor
             selectionColor.setFill()
             self.bounds.fill()
         }
