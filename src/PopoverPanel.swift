@@ -1,4 +1,5 @@
 import Cocoa
+import Carbon
 import OSLog
 
 class PopoverPanel: NSPanel {
@@ -41,32 +42,27 @@ class PopoverPanel: NSPanel {
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         let modifiers = event.modifierFlags.rawValue
-        let command = NSEvent.ModifierFlags.command.rawValue
-        let shift = NSEvent.ModifierFlags.shift.rawValue
-        let control = NSEvent.ModifierFlags.control.rawValue
-        let option = NSEvent.ModifierFlags.option.rawValue
+        let key = event.keyCode
 
         if event.type == NSEvent.EventType.keyDown {
-            // Checks if flags contains a command key,
-            // then check if flags doesn't contain any other keys.
-            if (modifiers & command) == command,
-                (modifiers & (control | shift | option)) == 0,
-                event.keyCode == 12 // Q
+            if modsContains(keys: OSCmd, in: modifiers) &&
+                key == kVK_ANSI_Q
             {
                 NSApplication.shared.terminate(self)
                 return true
-            } else if (modifiers & command) == command,
-                (modifiers & (control | shift | option)) == 0,
-                event.keyCode == 13 // W
+            } else if modsContains(keys: OSCmd, in: modifiers) &&
+                key == kVK_ANSI_W
             {
                 resignKey()
                 return true
-            } else if (modifiers & (command & shift)) == command & shift,
-                (modifiers & (control | option)) == 0,
-                event.keyCode == 15 // R
+                
+            } else if modsContains(keys: OSCmd | OSShift,
+                in: modifiers) &&
+                key == kVK_ANSI_R
             {
                 PathManager.shared.rebuildIndex()
-            } else if event.keyCode == 53 { // ESC
+                return true
+            } else if key == kVK_Escape {
                 resignKey()
                 return true
             }

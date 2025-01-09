@@ -7,6 +7,20 @@ fileprivate let logger = Logger(
     category: String("Helpers")
 )
 
+let OSCtrl  = NSEvent.ModifierFlags.control.rawValue
+let OSCmd   = NSEvent.ModifierFlags.command.rawValue
+let OSOpt   = NSEvent.ModifierFlags.option.rawValue
+let OSShift = NSEvent.ModifierFlags.shift.rawValue
+let OSMods  = UInt(OSCtrl | OSCmd | OSOpt | OSShift)
+
+func modsContains(keys: UInt, in modifiers: UInt) -> Bool {
+    return (modifiers & keys) == keys && ((modifiers ^ keys) & OSMods) == 0
+}
+
+func modsContainsNone(in modifiers: UInt) -> Bool {
+    return (modifiers & OSMods) == 0
+}
+
 enum ViewConstants {
     static let spacing2: CGFloat = 2
     static let spacing5: CGFloat = 2

@@ -1,4 +1,5 @@
 import AppKit
+import Carbon
 import OSLog
 
 class SearchViewController: NSViewController, NSTextFieldDelegate,
@@ -151,25 +152,20 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         { [weak self] event in
             let key = event.keyCode
             let modifiers = event.modifierFlags.rawValue
-            let command = NSEvent.ModifierFlags.command.rawValue
-            let shift = NSEvent.ModifierFlags.shift.rawValue
-            let control = NSEvent.ModifierFlags.control.rawValue
-            let option = NSEvent.ModifierFlags.option.rawValue
 
             // TODO: Implement helper functions for modifiers.
             if let controller = self {
-                if ((modifiers & control) == control &&
-                    (modifiers & (command | shift | option)) == 0 &&
-                    key == 35) || // P
-                    (modifiers & (command | control | shift | option)) == 0 &&
-                    (key == 126) // UP
+                if modsContains(keys: OSCtrl, in: modifiers) &&
+                        key == kVK_ANSI_P ||
+                    modsContainsNone(in: modifiers) &&
+                        key == kVK_UpArrow
                 {
                     controller.programsTableViewSelection -= 1
-                } else if ((modifiers & control) == control &&
-                    (modifiers & (command | shift | option)) == 0 &&
-                    key == 45) || // N
-                    (modifiers & (command | control | shift | option)) == 0 &&
-                    (key == 125) // DOWN
+                    
+                } else if modsContains(keys: OSCtrl, in: modifiers) &&
+                        key == kVK_ANSI_N ||
+                    modsContainsNone(in: modifiers) &&
+                        (key == kVK_DownArrow)
                 {
                     controller.programsTableViewSelection += 1
                 }
@@ -322,10 +318,12 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         doCommandBy commandSelector: Selector) -> Bool
     {
         if commandSelector == #selector(NSResponder.insertNewline(_:)) {
-            let program = programsList[programsTableViewSelection]
-            openProgram(program)
-            NSApp.sendAction(#selector(NSResponder.selectAll(_:)),
-                to: nil, from: self)
+            if programsList.count > 0 {
+                let program = programsList[programsTableViewSelection]
+                openProgram(program)
+                NSApp.sendAction(#selector(NSResponder.selectAll(_:)),
+                    to: nil, from: self)
+            }
             return true
         } else if commandSelector == #selector(NSResponder.insertTab(_:)) {
             return true

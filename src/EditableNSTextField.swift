@@ -11,6 +11,7 @@ final class EditableNSTextField: NSTextField {
                 NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
                 == commandKey 
             {
+                // TODO: Use virtual key codes instead of characters.
                 switch event.charactersIgnoringModifiers! {
                 case "x":
                     if NSApp.sendAction(#selector(NSText.cut(_:)),
