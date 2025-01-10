@@ -1,11 +1,5 @@
 import AppKit
 import Carbon
-import OSLog
-
-fileprivate let logger = Logger(
-    subsystem: Bundle.main.bundleIdentifier!,
-    category: String("Helpers")
-)
 
 let OSCtrl  = NSEvent.ModifierFlags.control.rawValue
 let OSCmd   = NSEvent.ModifierFlags.command.rawValue
@@ -29,13 +23,6 @@ enum ViewConstants {
     static let spacing40: CGFloat = 40
 }
 
-struct Program {
-    let path: String
-    let name: String
-    let ext: String
-    var img: NSImage?
-}
-
 func keyName(virtualKeyCode: UInt16) -> String? {
     let maxNameLength = 4
     var nameBuffer = [UniChar](repeating: 0, count : maxNameLength)
@@ -52,7 +39,7 @@ func keyName(virtualKeyCode: UInt16) -> String? {
     guard let ptr = TISGetInputSourceProperty(source,
         kTISPropertyUnicodeKeyLayoutData)
     else {
-        logger.log("Could not get keyboard layout data")
+        print("Could not get keyboard layout data")
         return nil
     }
     let layoutData = Unmanaged<CFData>.fromOpaque(ptr)
@@ -65,7 +52,7 @@ func keyName(virtualKeyCode: UInt16) -> String? {
             &deadKeys, maxNameLength, &nameLength, &nameBuffer)
     }
     guard osStatus == noErr else {
-        logger.debug("Code: \(virtualKeyCode) Status: \(osStatus)")
+        print("Code: \(virtualKeyCode) Status: \(osStatus)")
         return nil
     }
 

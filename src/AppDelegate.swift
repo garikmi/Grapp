@@ -1,21 +1,13 @@
 import Cocoa
 import Carbon
 import ServiceManagement
-import OSLog
 
 class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
-    fileprivate static let logger = Logger(
-        subsystem: Bundle.main.bundleIdentifier!,
-        category: String(describing: AppDelegate.self)
-    )
-
     let fileManager = FileManager.default
 
     let window = PopoverPanel(viewController: SearchViewController())
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Self.logger.debug("applicationDidFinishLaunching")
-
         PathManager.shared.rebuildIndex()
 
         window.delegate = self
@@ -24,7 +16,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         HotKeyManager.shared.handler =
         { (inHandlerCallRef, inEvent, inUserData) -> OSStatus in
-            AppDelegate.logger.debug("Shortcut handler fired off.")
             if let delegate =
                 NSApplication.shared.delegate as? AppDelegate
             {
@@ -59,12 +50,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     //}
 
     func windowDidBecomeKey(_ notification: Notification) {
-        Self.logger.debug("Popover became key.")
     }
 
     func windowDidResignKey(_ notification: Notification) {
-        Self.logger.debug("Popover resigned key.")
-
         if window.isVisible {
             window.orderOut(nil)
         }
@@ -73,8 +61,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication,
         hasVisibleWindows: Bool) -> Bool 
     {
-        Self.logger.debug("Application reopened.")
-
         if !window.isKeyWindow {
             window.makeKeyAndOrderFront(nil)
         }

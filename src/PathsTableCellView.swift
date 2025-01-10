@@ -1,19 +1,21 @@
 import AppKit
 
-protocol MyTableCellViewDelegate: AnyObject {
+protocol PathsTableCellViewDelegate: AnyObject {
     func selectionButtonClicked(tag: Int)
     func titleFieldTextChanged(tag: Int, text: String)
     func titleFieldFinishedEditing(tag: Int, text: String)
 }
 
-class MyTableCellView: NSTableCellView, NSTextFieldDelegate {
+class PathsTableCellView: NSTableCellView, NSTextFieldDelegate,
+    EditableNSTextFieldDelegate
+{
     var id: Int = -1
-    weak var delegate: MyTableCellViewDelegate?
+    weak var delegate: PathsTableCellViewDelegate?
 
     private(set) var isEditing = false
 
-    public var titleField: NSTextField = {
-        let field = NSTextField()
+    public var titleField: EditableNSTextField = {
+        let field = EditableNSTextField()
         field.isEditable = false
         field.maximumNumberOfLines = 1
         field.lineBreakMode = .byTruncatingTail
@@ -38,6 +40,7 @@ class MyTableCellView: NSTableCellView, NSTextFieldDelegate {
         super.init(frame: frameRect)
 
         titleField.delegate = self
+        titleField.auxiliaryDelegate = self
 
         selectionButton.target = self
         selectionButton.action = #selector(makeSelection)
@@ -74,15 +77,19 @@ class MyTableCellView: NSTableCellView, NSTextFieldDelegate {
     }
 
     public func startEditing() {
+        guard !isEditing else { return }
         isEditing = true
         titleField.isEditable = true
         window?.makeFirstResponder(titleField)
     }
 
     public func stopEditing() {
+        guard isEditing else { return }
         isEditing = false
         titleField.isEditable = false
         window?.makeFirstResponder(nil)
+        delegate?.titleFieldFinishedEditing(tag: id,
+            text: titleField.stringValue)
     }
 
     func controlTextDidChange(_ obj: Notification) {
@@ -95,13 +102,15 @@ class MyTableCellView: NSTableCellView, NSTextFieldDelegate {
     {
         if commandSelector == #selector(NSResponder.insertNewline(_:)) {
             stopEditing()
-            delegate?.titleFieldFinishedEditing(tag: id,
-                text: titleField.stringValue)
             return true
         } else if commandSelector == #selector(NSResponder.insertTab(_:)) {
             return true
         }
 
         return false
+    }
+
+    func lostFocus() {
+        stopEditing()
     }
 }

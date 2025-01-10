@@ -1,9 +1,15 @@
 import Cocoa
 
+protocol EditableNSTextFieldDelegate: AnyObject {
+    func lostFocus()
+}
+
 final class EditableNSTextField: NSTextField {
     private let commandKey = NSEvent.ModifierFlags.command.rawValue
     private let commandShiftKey = NSEvent.ModifierFlags.command.rawValue |
                                   NSEvent.ModifierFlags.shift.rawValue
+
+    weak var auxiliaryDelegate: EditableNSTextFieldDelegate?
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         if event.type == NSEvent.EventType.keyDown {
@@ -49,5 +55,9 @@ final class EditableNSTextField: NSTextField {
             }
         }
         return super.performKeyEquivalent(with: event)
+    }
+
+    override func textDidEndEditing(_ notification: Notification) {
+        auxiliaryDelegate?.lostFocus()
     }
 }

@@ -1,15 +1,9 @@
 import AppKit
 import Carbon
-import OSLog
 
 class SearchViewController: NSViewController, NSTextFieldDelegate,
     NSPopoverDelegate, NSTableViewDataSource, NSTableViewDelegate
 {
-    fileprivate static let logger = Logger(
-        subsystem: Bundle.main.bundleIdentifier!,
-        category: String(describing: SearchViewController.self)
-    )
-
     private var keyboardEvents: EventMonitor?
 
     private var foundProgram: Program? = nil
@@ -65,8 +59,8 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         return scroll
     }()
 
-    private var programsTableView: MyNSTableView = {
-        let table = MyNSTableView()
+    private var programsTableView: ProgramsTableView = {
+        let table = ProgramsTableView()
 
         table.style = NSTableView.Style.plain
         table.backgroundColor = .clear
@@ -262,9 +256,9 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
             configuration: config)
         { [weak self] application, error in
             if let error = error {
-                Self.logger.debug("\(error.localizedDescription)")
+                print("\(error.localizedDescription)")
             } else {
-                Self.logger.debug("Program opened successfully")
+                print("Program opened successfully")
                 // NOTE: This needs a window! Do not just copy-paste
                 //       this block elsewhere.
                 DispatchQueue.main.async {
@@ -383,8 +377,4 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
         return cell
     }
-}
-
-final class MyNSTableView: NSTableView {
-    override var acceptsFirstResponder: Bool { false }
 }

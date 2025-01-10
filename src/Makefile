@@ -10,8 +10,9 @@ EXEC = Grapp
 SRCMODULES = Helpers.swift EditableNSTextField.swift EventMonitor.swift \
 	GlobalEventTap.swift PopoverPanel.swift SearchViewController.swift \
 	SettingsViewController.swift HotKeyManager.swift \
-	KeyDetectorButton.swift PathManager.swift MyTableCellView.swift \
-	ProgramTableViewCell.swift AppDelegate.swift main.swift
+	KeyDetectorButton.swift PathManager.swift PathsTableCellView.swift \
+	ProgramTableViewCell.swift ProgramsTableView.swift AppDelegate.swift \
+	main.swift
 ARMOBJMODULES = $(addprefix ./arm64/,$(SRCMODULES:.swift=.o))
 X86OBJMODULES = $(addprefix ./x86_64/,$(SRCMODULES:.swift=.o))
 

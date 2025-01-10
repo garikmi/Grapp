@@ -1,12 +1,13 @@
 import AppKit
-import OSLog
+
+struct Program {
+    let path: String
+    let name: String
+    let ext: String
+    var img: NSImage?
+}
 
 final class PathManager {
-    fileprivate static let logger = Logger(
-        subsystem: Bundle.main.bundleIdentifier!,
-        category: String(describing: PathManager.self)
-    )
-
     static let shared = PathManager()
 
     // TODO: Filesystem events to watch changes on these directories and
@@ -80,7 +81,7 @@ final class PathManager {
                     }
                 }
             } catch {
-                Self.logger.error("Error reading directory: \(error.localizedDescription, privacy: .public)")
+                print("Error reading directory: \(error.localizedDescription)")
             }
         }
     }

@@ -1,17 +1,11 @@
 import AppKit
 import Carbon
 import ServiceManagement
-import OSLog
 
 class SettingsViewController: NSViewController, NSTextFieldDelegate,
     KeyDetectorButtonDelegate, NSTableViewDataSource, NSTableViewDelegate,
-    MyTableCellViewDelegate
+    PathsTableCellViewDelegate
 {
-    fileprivate static let logger = Logger(
-        subsystem: Bundle.main.bundleIdentifier!,
-        category: String(describing: SettingsViewController.self)
-    )
-
     private var recording = false
 
     // NOTE: This is the default shortcut. If you were to change it, don't
@@ -133,7 +127,7 @@ class SettingsViewController: NSViewController, NSTextFieldDelegate,
         table.doubleAction = #selector(editItem)
 
         table.headerView = nil
-        table.allowsMultipleSelection = true
+        table.allowsMultipleSelection = false
         table.allowsColumnReordering = false
         table.allowsColumnResizing = false
         table.allowsColumnSelection = false
@@ -260,7 +254,7 @@ class SettingsViewController: NSViewController, NSTextFieldDelegate,
                 equalTo: shortcutsLabel.leadingAnchor),
 
             tableScrollView.widthAnchor.constraint(equalToConstant: 350),
-            tableScrollView.heightAnchor.constraint(equalToConstant: 100),
+            tableScrollView.heightAnchor.constraint(equalToConstant: 150),
             tableScrollView.topAnchor.constraint(
                 equalTo: pathsLabel.bottomAnchor),
             tableScrollView.leadingAnchor.constraint(
@@ -336,6 +330,7 @@ class SettingsViewController: NSViewController, NSTextFieldDelegate,
             modifiers = mods
         }
 
+        pathsTableView.reloadData()
         syncModifierButtons()
         launchAtLoginStatus()
     }
@@ -355,6 +350,7 @@ class SettingsViewController: NSViewController, NSTextFieldDelegate,
         UserDefaults.standard.set(keyCode, forKey: "keyCode")
         UserDefaults.standard.set(modifiers, forKey: "keyModifiers")
 
+        PathManager.shared.removeEmpty()
         PathManager.shared.savePaths()
         PathManager.shared.rebuildIndex()
     }
@@ -429,9 +425,9 @@ class SettingsViewController: NSViewController, NSTextFieldDelegate,
     }
 
     private func syncModifierButtons() {
-        ctrlButton.state = .off
-        cmdButton.state = .off
-        optButton.state = .off
+        ctrlButton.state  = .off
+        cmdButton.state   = .off
+        optButton.state   = .off
         shiftButton.state = .off
 
         if modifiers & controlKey != 0 {
@@ -454,29 +450,30 @@ class SettingsViewController: NSViewController, NSTextFieldDelegate,
 
     @objc
     private func affectPaths(_ sender: NSSegmentedControl) {
-        // PERF: All of this could be written better.
         let selectedSegment = sender.selectedSegment
         switch selectedSegment {
         case 0:
-            PathManager.shared.addPath("")
-            pathsTableView.reloadData()
-
-            let row = PathManager.shared.userPaths.count-1
+            // NOTE: Seems a bit error prone.
+            var row = PathManager.shared.userPaths.count-1
+            if !PathManager.shared.userPaths[row].isEmpty {
+                row += 1
+                PathManager.shared.addPath("")
+                pathsTableView.insertRows(at: IndexSet(integer: row),
+                    withAnimation: [])
+            }
+            pathsTableView.scrollRowToVisible(row)
             pathsTableView.selectRowIndexes(IndexSet(integer: row),
                 byExtendingSelection: false)
-            pathsTableView.scrollRowToVisible(row)
             (pathsTableView.view(atColumn: 0, row: row,
-                makeIfNecessary: false) as? MyTableCellView)?
+                makeIfNecessary: false) as? PathsTableCellView)?
                     .startEditing()
             break
         case 1:
-            var toRemove: [String] = []
-            for row in pathsTableView.selectedRowIndexes {
-                toRemove.append(PathManager.shared.userPaths[row])
+            if pathsTableView.selectedRow > -1 {
+                PathManager.shared.userPaths
+                    .remove(at: pathsTableView.selectedRow)
+                pathsTableView.reloadData()
             }
-            PathManager.shared.userPaths.removeAll(
-                where: { toRemove.contains($0) })
-            pathsTableView.reloadData()
             break
         default:
             break
@@ -492,19 +489,19 @@ class SettingsViewController: NSViewController, NSTextFieldDelegate,
 
         if let cell = pathsTableView.view(atColumn: 0,
             row: pathsTableView.clickedRow,
-            makeIfNecessary: false) as? MyTableCellView
+            makeIfNecessary: false) as? PathsTableCellView
         {
             cell.startEditing()
         }
     }
 
     func titleFieldFinishedEditing(tag: Int, text: String) {
-        PathManager.shared.userPaths[tag] = text
-        if PathManager.shared.userPaths[tag].isEmpty {
+        if text.isEmpty {
             PathManager.shared.userPaths.remove(at: tag)
-            pathsTableView.reloadData()
+        } else {
+            PathManager.shared.userPaths[tag] = text
         }
-        pathsTableView.deselectAll(nil)
+        pathsTableView.reloadData()
     }
 
     func titleFieldTextChanged(tag: Int, text: String) {
@@ -543,20 +540,13 @@ class SettingsViewController: NSViewController, NSTextFieldDelegate,
     {
         let rect = NSRect(x: 0, y: 0,
             width: tableColumn!.width, height: 20)
-        let cell = MyTableCellView(frame: rect)
+        let cell = PathsTableCellView(frame: rect)
         cell.titleField.stringValue = PathManager.shared.userPaths[row]
         cell.delegate = self
         cell.id = row
-
         return cell
     }
 
     func tableViewSelectionDidChange(_ notification: Notification) {
-/*
-        let selectedRow = tableView.selectedRow
-        if selectedRow >= 0 {
-            print("Selected: \(items[selectedRow])")
-        }
-*/
     }
 }

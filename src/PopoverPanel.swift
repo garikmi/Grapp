@@ -1,13 +1,7 @@
 import Cocoa
 import Carbon
-import OSLog
 
 class PopoverPanel: NSPanel {
-    fileprivate static let logger = Logger(
-        subsystem: Bundle.main.bundleIdentifier!,
-        category: String(describing: PopoverPanel.self)
-    )
-
     override var canBecomeKey: Bool { true }
 
     init(viewController: NSViewController) {
