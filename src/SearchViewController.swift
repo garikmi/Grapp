@@ -42,7 +42,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     private var settingsButton: NSButton = {
         let button = NSButton()
         button.image = systemImage("gearshape.fill", .title2, .large,
-            .init(paletteColors: [.white, .systemRed]))
+            .init(paletteColors: [.labelColor, .systemRed]))
         button.isBordered = false
         button.action = #selector(openSettings)
         button.sizeToFit()
@@ -367,7 +367,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
                 .range(of: searchInput.stringValue.lowercased())
         let attributedString = NSMutableAttributedString(string: app)
         attributedString.addAttributes(
-            [.backgroundColor: NSColor.systemOrange],
+            [.foregroundColor: NSColor.labelColor],
             range: rangeToHighlight)
 
         cell.titleField.attributedStringValue = attributedString

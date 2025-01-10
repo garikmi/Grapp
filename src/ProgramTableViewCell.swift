@@ -4,6 +4,7 @@ class ProgramTableRowView: NSTableRowView {
     override func drawSelection(in dirtyRect: NSRect) {
         if self.selectionHighlightStyle != .none {
             let selectionColor = NSColor.controlAccentColor
+                .withAlphaComponent(0.8)
             selectionColor.setFill()
             self.bounds.fill()
         }
@@ -26,6 +27,7 @@ class ProgramTableViewCell: NSTableCellView {
 
     public var titleField: NSTextField = {
         let field = NSTextField(labelWithString: "")
+        field.textColor = NSColor.secondaryLabelColor
         field.lineBreakMode = .byTruncatingTail
         field.translatesAutoresizingMaskIntoConstraints = false
         return field
