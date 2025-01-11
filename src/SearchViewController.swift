@@ -1,6 +1,11 @@
 import AppKit
 import Carbon
 
+// NOTE: This is the corner radius of the backgrounView view that acts as
+//       a window frame and an NSViewController's view that clips all
+//       elements inside of it.
+fileprivate let windowCornerRadius = 20.0
+
 class SearchViewController: NSViewController, NSTextFieldDelegate,
     NSPopoverDelegate, NSTableViewDataSource, NSTableViewDelegate
 {
@@ -16,6 +21,42 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         popover.contentViewController = SettingsViewController()
         popover.behavior = .transient
         return popover
+    }()
+
+    private var shadowView: ShadowView = {
+        let view = ShadowView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+    private var backgroundView: NSVisualEffectView = {
+        let effect = NSVisualEffectView()
+        effect.blendingMode = .behindWindow
+        effect.state = .active
+        effect.material = .popover
+
+        effect.wantsLayer = true
+        effect.layer?.masksToBounds = true
+
+        effect.layer?.borderColor = NSColor.labelColor.withAlphaComponent(0.1).cgColor
+        effect.layer?.borderWidth = 1
+        effect.layer?.cornerRadius = windowCornerRadius
+
+        effect.translatesAutoresizingMaskIntoConstraints = false
+        return effect
+    }()
+
+    private var contentView: NSView = {
+        let view = NSView()
+
+        // Clip all content to window's rounded frame emulated by
+        // backgroundView.
+        view.wantsLayer = true
+        view.layer?.masksToBounds = true
+        view.layer?.cornerRadius = windowCornerRadius
+
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
     }()
 
     private var appIconImage: NSImageView = {
@@ -53,7 +94,8 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
     private var tableScrollView: NSScrollView = {
         let scroll = NSScrollView()
-        scroll.contentInsets = NSEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        scroll.contentInsets = NSEdgeInsets(top: 0, left: 0, bottom: 0,
+                                            right: 0)
         scroll.drawsBackground = false
         scroll.translatesAutoresizingMaskIntoConstraints = false
         return scroll
@@ -81,10 +123,14 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     }()
 
     private func addSubviews() {
-        view.addSubview(appIconImage)
-        view.addSubview(searchInput)
-        view.addSubview(settingsButton)
-        view.addSubview(tableScrollView)
+        view.addSubview(shadowView)
+        view.addSubview(backgroundView)
+        view.addSubview(contentView)
+
+        contentView.addSubview(appIconImage)
+        contentView.addSubview(searchInput)
+        contentView.addSubview(settingsButton)
+        contentView.addSubview(tableScrollView)
     }
 
     var viewBottomAnchorTable: NSLayoutConstraint?
@@ -92,24 +138,52 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
     private func setConstraints() {
         viewBottomAnchorTable = tableScrollView.bottomAnchor.constraint(
-            equalTo: view.bottomAnchor,
+            equalTo: contentView.bottomAnchor,
             constant: -ViewConstants.spacing10)
         viewBottomAnchorImage = appIconImage.bottomAnchor.constraint(
-            equalTo: view.bottomAnchor,
+            equalTo: contentView.bottomAnchor,
             constant: -ViewConstants.spacing10)
 
         viewBottomAnchorTable?.isActive = false
         viewBottomAnchorImage?.isActive = true
 
         NSLayoutConstraint.activate([
+            view.topAnchor.constraint(equalTo: contentView.topAnchor,
+                                      constant: -100),
+            view.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,
+                                         constant: 100),
+            view.leadingAnchor.constraint(
+                equalTo: contentView.leadingAnchor, constant: -100),
+            view.trailingAnchor.constraint(
+                equalTo: contentView.trailingAnchor, constant: 100),
+
+            shadowView.topAnchor.constraint(
+                equalTo: backgroundView.topAnchor),
+            shadowView.bottomAnchor.constraint(
+                equalTo: backgroundView.bottomAnchor),
+            shadowView.leadingAnchor.constraint(
+                equalTo: backgroundView.leadingAnchor),
+            shadowView.trailingAnchor.constraint(
+                equalTo: backgroundView.trailingAnchor),
+
+            backgroundView.topAnchor.constraint(
+                equalTo: contentView.topAnchor),
+            backgroundView.bottomAnchor.constraint(
+                equalTo: contentView.bottomAnchor),
+            backgroundView.leadingAnchor.constraint(
+                equalTo: contentView.leadingAnchor),
+            backgroundView.trailingAnchor.constraint(
+                equalTo: contentView.trailingAnchor),
+
             appIconImage.widthAnchor.constraint(equalToConstant: 60),
             appIconImage.heightAnchor.constraint(
                 equalTo: appIconImage.widthAnchor, multiplier: 1),
 
-            appIconImage.topAnchor.constraint(equalTo: view.topAnchor,
+            appIconImage.topAnchor.constraint(
+                equalTo: contentView.topAnchor,
                 constant: ViewConstants.spacing10),
             appIconImage.leadingAnchor.constraint(
-                equalTo: view.leadingAnchor,
+                equalTo: contentView.leadingAnchor,
                 constant: ViewConstants.spacing10),
 
             searchInput.widthAnchor.constraint(equalToConstant: 300),
@@ -125,7 +199,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
                 equalTo: searchInput.trailingAnchor,
                 constant: ViewConstants.spacing10),
             settingsButton.trailingAnchor.constraint(
-                equalTo: view.trailingAnchor,
+                equalTo: contentView.trailingAnchor,
                 constant: -ViewConstants.spacing10),
 
             tableScrollView.heightAnchor.constraint(equalToConstant: 210),
@@ -133,14 +207,17 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
                 equalTo: appIconImage.bottomAnchor,
                 constant: ViewConstants.spacing10),
             tableScrollView.leadingAnchor.constraint(
-                equalTo: view.leadingAnchor),
+                equalTo: contentView.leadingAnchor),
             tableScrollView.trailingAnchor.constraint(
-               equalTo: view.trailingAnchor)
+               equalTo: contentView.trailingAnchor)
         ])
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        view.wantsLayer = true
+        view.layer?.backgroundColor = NSColor.clear.cgColor
 
         keyboardEvents = LocalEventMonitor(mask: [.keyDown], handler:
         { [weak self] event in

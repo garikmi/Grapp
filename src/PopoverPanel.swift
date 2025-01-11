@@ -7,20 +7,22 @@ class PopoverPanel: NSPanel {
     init(viewController: NSViewController) {
         super.init(
             contentRect: CGRect(x: 0, y: 0, width: 100, height: 100),
-            styleMask: [.titled, .nonactivatingPanel, .utilityWindow,
+            styleMask: [.borderless, .nonactivatingPanel, .utilityWindow,
                         .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
         super.contentViewController = viewController
 
+        isOpaque = false
+        backgroundColor = NSColor.clear
+        hasShadow = false
+
         title = ""
         isMovable = true
         isMovableByWindowBackground = true
         isFloatingPanel = true
-        isOpaque = false
         level = .statusBar
-        titleVisibility = .hidden
         titlebarAppearsTransparent = true
 
         animationBehavior = .none
@@ -28,10 +30,6 @@ class PopoverPanel: NSPanel {
                               .transient]
         isReleasedWhenClosed = false
         hidesOnDeactivate = false
-
-        standardWindowButton(.closeButton)?.isHidden = true
-        standardWindowButton(.miniaturizeButton)?.isHidden = true
-        standardWindowButton(.zoomButton)?.isHidden = true
     }
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
