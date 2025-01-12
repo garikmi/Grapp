@@ -55,7 +55,8 @@ class ProgramTableViewCell: NSTableCellView {
             appIconImage.heightAnchor.constraint(equalToConstant: 40),
             appIconImage.topAnchor.constraint(equalTo: topAnchor),
             appIconImage.bottomAnchor.constraint(equalTo: bottomAnchor),
-            appIconImage.leadingAnchor.constraint(equalTo: leadingAnchor),
+            appIconImage.leadingAnchor.constraint(equalTo: leadingAnchor,
+                constant: ViewConstants.spacing5),
 
             titleField.topAnchor.constraint(
                 equalTo: appIconImage.topAnchor,

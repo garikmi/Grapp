@@ -4,7 +4,7 @@ import Carbon
 // NOTE: This is the corner radius of the backgrounView view that acts as
 //       a window frame and an NSViewController's view that clips all
 //       elements inside of it.
-fileprivate let windowCornerRadius = 20.0
+fileprivate let windowCornerRadius = 15.0
 
 class SearchViewController: NSViewController, NSTextFieldDelegate,
     NSPopoverDelegate, NSTableViewDataSource, NSTableViewDelegate
@@ -48,7 +48,6 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
     private var contentView: NSView = {
         let view = NSView()
-
         // Clip all content to window's rounded frame emulated by
         // backgroundView.
         view.wantsLayer = true
@@ -59,31 +58,26 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         return view
     }()
 
-    private var appIconImage: NSImageView = {
-        let image = NSImageView()
-        image.image = 
-            NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
-        image.imageScaling = .scaleAxesIndependently
-        image.translatesAutoresizingMaskIntoConstraints = false
-        return image
-    }()
-
     private var searchInput: EditableNSTextField = {
         let textField = EditableNSTextField()
-        textField.placeholderString = "Search programs . . ."
-        textField.usesSingleLineMode = false
+        textField.isBezeled = false
+        textField.maximumNumberOfLines = 1
+        textField.usesSingleLineMode = true
+        textField.lineBreakMode = .byTruncatingHead
+        textField.focusRingType = .none
+        textField.placeholderString = "Program Search"
         textField.bezelStyle = .roundedBezel
         textField.font = NSFont.systemFont(
             ofSize: NSFontDescriptor.preferredFontDescriptor(
-                forTextStyle: .title3).pointSize, weight: .medium)
+                forTextStyle: .largeTitle).pointSize, weight: .medium)
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
 
     private var settingsButton: NSButton = {
         let button = NSButton()
-        button.image = systemImage("gearshape.fill", .title2, .large,
-            .init(paletteColors: [.labelColor, .systemRed]))
+        button.image = systemImage("gear.circle.fill", .title1, .large,
+            .init(paletteColors: [.labelColor, .systemGray]))
         button.isBordered = false
         button.action = #selector(openSettings)
         button.sizeToFit()
@@ -127,25 +121,16 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         view.addSubview(backgroundView)
         view.addSubview(contentView)
 
-        contentView.addSubview(appIconImage)
         contentView.addSubview(searchInput)
         contentView.addSubview(settingsButton)
         contentView.addSubview(tableScrollView)
     }
 
-    var viewBottomAnchorTable: NSLayoutConstraint?
-    var viewBottomAnchorImage: NSLayoutConstraint?
+    var tableViewHeightAnchor: NSLayoutConstraint?
 
     private func setConstraints() {
-        viewBottomAnchorTable = tableScrollView.bottomAnchor.constraint(
-            equalTo: contentView.bottomAnchor,
-            constant: -ViewConstants.spacing10)
-        viewBottomAnchorImage = appIconImage.bottomAnchor.constraint(
-            equalTo: contentView.bottomAnchor,
-            constant: -ViewConstants.spacing10)
-
-        viewBottomAnchorTable?.isActive = false
-        viewBottomAnchorImage?.isActive = true
+        tableViewHeightAnchor = tableScrollView.heightAnchor.constraint(equalToConstant: 0)
+        tableViewHeightAnchor?.isActive = true
 
         NSLayoutConstraint.activate([
             view.topAnchor.constraint(equalTo: contentView.topAnchor,
@@ -175,37 +160,29 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
             backgroundView.trailingAnchor.constraint(
                 equalTo: contentView.trailingAnchor),
 
-            appIconImage.widthAnchor.constraint(equalToConstant: 60),
-            appIconImage.heightAnchor.constraint(
-                equalTo: appIconImage.widthAnchor, multiplier: 1),
-
-            appIconImage.topAnchor.constraint(
+            searchInput.widthAnchor.constraint(equalToConstant: 350),
+            searchInput.topAnchor.constraint(
                 equalTo: contentView.topAnchor,
                 constant: ViewConstants.spacing10),
-            appIconImage.leadingAnchor.constraint(
-                equalTo: contentView.leadingAnchor,
-                constant: ViewConstants.spacing10),
-
-            searchInput.widthAnchor.constraint(equalToConstant: 300),
-            searchInput.centerYAnchor.constraint(
-                equalTo: appIconImage.centerYAnchor),
             searchInput.leadingAnchor.constraint(
-                equalTo: appIconImage.trailingAnchor,
-                constant: ViewConstants.spacing10),
+                equalTo: contentView.leadingAnchor,
+                constant: ViewConstants.spacing15),
 
-            settingsButton.firstBaselineAnchor.constraint(
-                equalTo: searchInput.firstBaselineAnchor),
+            settingsButton.centerYAnchor.constraint(
+                equalTo: searchInput.centerYAnchor),
             settingsButton.leadingAnchor.constraint(
                 equalTo: searchInput.trailingAnchor,
-                constant: ViewConstants.spacing10),
+                constant: ViewConstants.spacing5),
             settingsButton.trailingAnchor.constraint(
                 equalTo: contentView.trailingAnchor,
                 constant: -ViewConstants.spacing10),
 
-            tableScrollView.heightAnchor.constraint(equalToConstant: 210),
+            // tableScrollView.heightAnchor.constraint(equalToConstant: 210),
             tableScrollView.topAnchor.constraint(
-                equalTo: appIconImage.bottomAnchor,
+                equalTo: searchInput.bottomAnchor,
                 constant: ViewConstants.spacing10),
+            tableScrollView.bottomAnchor.constraint(
+                equalTo: contentView.bottomAnchor),
             tableScrollView.leadingAnchor.constraint(
                 equalTo: contentView.leadingAnchor),
             tableScrollView.trailingAnchor.constraint(
@@ -232,7 +209,6 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
                         key == kVK_UpArrow
                 {
                     controller.programsTableViewSelection -= 1
-                    
                 } else if modsContains(keys: OSCtrl, in: modifiers) &&
                         key == kVK_ANSI_N ||
                     modsContainsNone(in: modifiers) &&
@@ -277,6 +253,9 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
         keyboardEvents?.start()
 
+        // TODO: This doesn't play well when the window is expanded with
+        //       search results, causing it to reappear in a slightly
+        //       above usual position.
         view.window?.center()
 
         view.window?.makeFirstResponder(searchInput)
@@ -297,11 +276,9 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
     private func reloadProgramsTableViewData() {
         if programsList.count > 0 {
-            viewBottomAnchorTable?.isActive = true
-            viewBottomAnchorImage?.isActive = false
+            tableViewHeightAnchor?.constant = 210
         } else {
-            viewBottomAnchorTable?.isActive = false
-            viewBottomAnchorImage?.isActive = true
+            tableViewHeightAnchor?.constant = 0
         }
         programsTableView.reloadData()
     }
@@ -376,13 +353,6 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
             IndexSet(integer: programsTableViewSelection),
             byExtendingSelection: false)
         programsTableView.scrollRowToVisible(programsTableViewSelection)
-
-        if programsList.count > 0 {
-            appIconImage.image = programsList[0].img
-        } else {
-            appIconImage.image =
-                NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
-        }
     }
 
     func control(_ control: NSControl, textView: NSTextView,
@@ -453,5 +423,11 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         cell.id = row
 
         return cell
+    }
+
+    func tableViewSelectionDidChange(_ notification: Notification) {
+        if programsTableView.selectedRow != programsTableViewSelection {
+            programsTableViewSelection = programsTableView.selectedRow
+        }
     }
 }

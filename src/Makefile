@@ -74,6 +74,7 @@ $(EXEC): ./arm64/$(EXEC)
 	@lipo -create -output $(EXEC) $^
 endif
 
+
 $(EXEC).app: $(EXEC)
 	@rm -rf $@
 	@mkdir -p $@/Contents/MacOS/ && \
@@ -81,7 +82,11 @@ $(EXEC).app: $(EXEC)
 	cp Info.plist $@/Contents/ && \
 	cp resources/AppIcon.icns $@/Contents/Resources/ && \
 	cp $(EXEC) $@/Contents/MacOS/ && \
-	codesign -s ${DEVELOPER_ID} -f --timestamp -o runtime $(EXEC).app
+	$(if $(DEBUG), \
+		codesign --entitlements Grapp.entitlements \
+		-s ${APPLE_DEVELOPMENT} -f --timestamp -o runtime $(EXEC).app, \
+		codesign -s ${APPLE_DEVELOPER_ID_APPLICATION} -f --timestamp \
+		-o runtime $(EXEC).app)
 
 all: $(EXEC).app
 
