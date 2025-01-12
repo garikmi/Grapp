@@ -253,10 +253,11 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
         keyboardEvents?.start()
 
-        // TODO: This doesn't play well when the window is expanded with
-        //       search results, causing it to reappear in a slightly
-        //       above usual position.
-        view.window?.center()
+        if let win = view.window, let scrn = NSScreen.main {
+            let x = (scrn.visibleFrame.size.width / 2) - (win.frame.size.width / 2)
+            let y = (scrn.visibleFrame.size.height * 0.9) - win.frame.size.height
+            view.window?.setFrameOrigin(NSPoint(x: x, y: y))
+        }
 
         view.window?.makeFirstResponder(searchInput)
         // searchInput should select all text whenever window appears.
