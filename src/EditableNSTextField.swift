@@ -1,53 +1,43 @@
 import Cocoa
+import Carbon
 
 protocol EditableNSTextFieldDelegate: AnyObject {
     func lostFocus()
 }
 
 final class EditableNSTextField: NSTextField {
-    private let commandKey = NSEvent.ModifierFlags.command.rawValue
-    private let commandShiftKey = NSEvent.ModifierFlags.command.rawValue |
-                                  NSEvent.ModifierFlags.shift.rawValue
-
     weak var auxiliaryDelegate: EditableNSTextFieldDelegate?
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         if event.type == NSEvent.EventType.keyDown {
-            if (event.modifierFlags.rawValue &
-                NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
-                == commandKey 
-            {
-                // TODO: Use virtual key codes instead of characters.
-                switch event.charactersIgnoringModifiers! {
-                case "x":
+            let modifiers = event.modifierFlags.rawValue
+            let key = event.keyCode
+
+            if modsContains(keys: OSCmd, in: modifiers) {
+                if key == kVK_ANSI_X {
                     if NSApp.sendAction(#selector(NSText.cut(_:)),
                         to: nil, from: self)
                     { return true }
-                case "c":
+                } else if key == kVK_ANSI_C {
                     if NSApp.sendAction(#selector(NSText.copy(_:)),
                         to: nil, from: self)
                     { return true }
-                case "v":
+                } else if key == kVK_ANSI_V {
                     if NSApp.sendAction(#selector(NSText.paste(_:)),
                         to: nil, from: self)
                     { return true }
-                case "z":
+                } else if key == kVK_ANSI_Z {
                     if NSApp.sendAction(Selector(("undo:")),
                         to: nil, from: self)
                     { return true }
-                case "a":
+                } else if key == kVK_ANSI_A {
                     if NSApp.sendAction(
                         #selector(NSResponder.selectAll(_:)), to: nil,
                         from: self)
                     { return true }
-                default:
-                    break
                 }
-            } else if (event.modifierFlags.rawValue &
-                NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
-                == commandShiftKey
-            {
-                if event.charactersIgnoringModifiers == "Z" {
+            } else if modsContains(keys: OSCmd | OSShift, in: modifiers) {
+                if key == kVK_ANSI_Z {
                     if NSApp.sendAction(Selector(("redo:")), to: nil,
                         from: self)
                     { return true }

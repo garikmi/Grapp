@@ -8,10 +8,10 @@ XCODE_PATH = $(shell xcode-select --print-path)
 EXEC = Grapp
 
 SRCMODULES = Helpers.swift EditableNSTextField.swift EventMonitor.swift \
-	GlobalEventTap.swift PopoverPanel.swift SearchViewController.swift \
+	PopoverPanel.swift SearchViewController.swift \
 	SettingsViewController.swift HotKeyManager.swift \
 	KeyDetectorButton.swift PathManager.swift PathsTableCellView.swift \
-	ProgramTableViewCell.swift ProgramsTableView.swift ShadowView.swift \
+	ProgramsTable.swift ShadowView.swift \
 	AppDelegate.swift main.swift
 ARMOBJMODULES = $(addprefix ./arm64/,$(SRCMODULES:.swift=.o))
 X86OBJMODULES = $(addprefix ./x86_64/,$(SRCMODULES:.swift=.o))

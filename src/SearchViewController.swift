@@ -395,13 +395,13 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     func tableView(_ tableView: NSTableView,
         rowViewForRow row: Int) -> NSTableRowView?
     {
-        return ProgramTableRowView()
+        return ProgramsTableRowView()
     }
 
     func tableView(_ tableView: NSTableView,
         viewFor tableColumn: NSTableColumn?, row: Int) -> NSView?
     {
-        let cell = ProgramTableViewCell()
+        let cell = ProgramsTableViewCell()
         let program = programsList[row]
 
         // PERF: This is very slow, even with 10 items on the list! It has

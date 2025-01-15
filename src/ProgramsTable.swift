@@ -1,6 +1,10 @@
 import AppKit
 
-class ProgramTableRowView: NSTableRowView {
+final class ProgramsTableView: NSTableView {
+    override var acceptsFirstResponder: Bool { false }
+}
+
+class ProgramsTableRowView: NSTableRowView {
     override func drawSelection(in dirtyRect: NSRect) {
         if self.selectionHighlightStyle != .none {
             let selectionColor = NSColor.controlAccentColor
@@ -11,7 +15,7 @@ class ProgramTableRowView: NSTableRowView {
     }
 }
 
-class ProgramTableViewCell: NSTableCellView {
+class ProgramsTableViewCell: NSTableCellView {
     var id: Int = -1
 
     private(set) var isEditing = false

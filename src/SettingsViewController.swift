@@ -3,8 +3,9 @@ import Carbon
 import ServiceManagement
 
 class SettingsViewController: NSViewController, NSTextFieldDelegate,
-    KeyDetectorButtonDelegate, NSTableViewDataSource, NSTableViewDelegate,
-    PathsTableCellViewDelegate
+                              KeyDetectorButtonDelegate,
+                              NSTableViewDataSource, NSTableViewDelegate,
+                              PathsTableCellViewDelegate
 {
     private var recording = false
 
@@ -545,8 +546,5 @@ class SettingsViewController: NSViewController, NSTextFieldDelegate,
         cell.delegate = self
         cell.id = row
         return cell
-    }
-
-    func tableViewSelectionDidChange(_ notification: Notification) {
     }
 }

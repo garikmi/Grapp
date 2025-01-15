@@ -12,7 +12,6 @@ class ShadowView: NSView {
 
     private func setupView() {
         wantsLayer = true
-
         guard let layer = layer else { return }
 
         let shadow = NSShadow()
