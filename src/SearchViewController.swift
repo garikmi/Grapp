@@ -38,7 +38,8 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         effect.wantsLayer = true
         effect.layer?.masksToBounds = true
 
-        effect.layer?.borderColor = NSColor.labelColor.withAlphaComponent(0.1).cgColor
+        effect.layer?.borderColor = NSColor.labelColor
+                                        .withAlphaComponent(0.1).cgColor
         effect.layer?.borderWidth = 1
         effect.layer?.cornerRadius = windowCornerRadius
 
@@ -88,8 +89,11 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
     private var tableScrollView: NSScrollView = {
         let scroll = NSScrollView()
-        scroll.contentInsets = NSEdgeInsets(top: 0, left: 0, bottom: 0,
-                                            right: 0)
+        scroll.automaticallyAdjustsContentInsets = false
+        scroll.contentInsets = NSEdgeInsets(
+                                   top: 0, left: 0,
+                                   bottom: ViewConstants.spacing10,
+                                   right: 0)
         scroll.drawsBackground = false
         scroll.translatesAutoresizingMaskIntoConstraints = false
         return scroll
@@ -129,7 +133,8 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     var tableViewHeightAnchor: NSLayoutConstraint?
 
     private func setConstraints() {
-        tableViewHeightAnchor = tableScrollView.heightAnchor.constraint(equalToConstant: 0)
+        tableViewHeightAnchor = tableScrollView.heightAnchor
+                                           .constraint(equalToConstant: 0)
         tableViewHeightAnchor?.isActive = true
 
         NSLayoutConstraint.activate([
@@ -177,7 +182,6 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
                 equalTo: contentView.trailingAnchor,
                 constant: -ViewConstants.spacing10),
 
-            // tableScrollView.heightAnchor.constraint(equalToConstant: 210),
             tableScrollView.topAnchor.constraint(
                 equalTo: searchInput.bottomAnchor,
                 constant: ViewConstants.spacing10),
