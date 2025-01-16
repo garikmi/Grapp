@@ -28,7 +28,7 @@ class PathsTableCellView: NSTableCellView, NSTextFieldDelegate,
     var selectionButton: NSButton = {
         let button = NSButton()
         button.image = systemImage("hand.point.up.fill", .headline, .large,
-            .init(paletteColors: [.white, .systemRed]))
+            .init(paletteColors: [.labelColor, .systemRed]))
         button.isBordered = false
         button.sizeToFit()
         button.toolTip = "Select Path"
