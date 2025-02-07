@@ -6,12 +6,16 @@ import Carbon
 //       elements inside of it.
 fileprivate let windowCornerRadius = 15.0
 
+struct ProgramWeighted {
+    let program: Program
+    let weight: Int
+}
+
 class SearchViewController: NSViewController, NSTextFieldDelegate,
     NSPopoverDelegate, NSTableViewDataSource, NSTableViewDelegate
 {
     private var keyboardEvents: EventMonitor?
 
-    private var foundProgram: Program? = nil
     private var programsList: [Program] = []
 
     private var programsTableViewSelection = 0
@@ -38,8 +42,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         effect.wantsLayer = true
         effect.layer?.masksToBounds = true
 
-        effect.layer?.borderColor = NSColor.labelColor
-                                        .withAlphaComponent(0.1).cgColor
+        effect.layer?.borderColor = NSColor.labelColor.withAlphaComponent(0.1).cgColor
         effect.layer?.borderWidth = 1
         effect.layer?.cornerRadius = windowCornerRadius
 
@@ -68,17 +71,14 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         textField.focusRingType = .none
         textField.placeholderString = "Program Search"
         textField.bezelStyle = .roundedBezel
-        textField.font = NSFont.systemFont(
-            ofSize: NSFontDescriptor.preferredFontDescriptor(
-                forTextStyle: .largeTitle).pointSize, weight: .medium)
+        textField.font = NSFont.systemFont(ofSize: NSFontDescriptor.preferredFontDescriptor(forTextStyle: .largeTitle).pointSize, weight: .medium)
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
 
     private var settingsButton: NSButton = {
         let button = NSButton()
-        button.image = systemImage("gear.circle.fill", .title1, .large,
-            .init(paletteColors: [.labelColor, .systemGray]))
+        button.image = systemImage("gear.circle.fill", .title1, .large, .init(paletteColors: [.labelColor, .systemGray]))
         button.isBordered = false
         button.action = #selector(openSettings)
         button.sizeToFit()
@@ -90,10 +90,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     private var tableScrollView: NSScrollView = {
         let scroll = NSScrollView()
         scroll.automaticallyAdjustsContentInsets = false
-        scroll.contentInsets = NSEdgeInsets(
-                                   top: 0, left: 0,
-                                   bottom: ViewConstants.spacing10,
-                                   right: 0)
+        scroll.contentInsets = NSEdgeInsets(top: 0, left: 0, bottom: ViewConstants.spacing10, right: 0)
         scroll.drawsBackground = false
         scroll.translatesAutoresizingMaskIntoConstraints = false
         return scroll
@@ -133,64 +130,37 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     var tableViewHeightAnchor: NSLayoutConstraint?
 
     private func setConstraints() {
-        tableViewHeightAnchor = tableScrollView.heightAnchor
-                                           .constraint(equalToConstant: 0)
+        tableViewHeightAnchor = tableScrollView.heightAnchor.constraint(equalToConstant: 0)
         tableViewHeightAnchor?.isActive = true
 
         NSLayoutConstraint.activate([
-            view.topAnchor.constraint(equalTo: contentView.topAnchor,
-                                      constant: -100),
-            view.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,
-                                         constant: 100),
-            view.leadingAnchor.constraint(
-                equalTo: contentView.leadingAnchor, constant: -100),
-            view.trailingAnchor.constraint(
-                equalTo: contentView.trailingAnchor, constant: 100),
+            view.topAnchor.constraint(equalTo: contentView.topAnchor, constant: -100),
+            view.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 100),
+            view.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: -100),
+            view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 100),
 
-            shadowView.topAnchor.constraint(
-                equalTo: backgroundView.topAnchor),
-            shadowView.bottomAnchor.constraint(
-                equalTo: backgroundView.bottomAnchor),
-            shadowView.leadingAnchor.constraint(
-                equalTo: backgroundView.leadingAnchor),
-            shadowView.trailingAnchor.constraint(
-                equalTo: backgroundView.trailingAnchor),
+            shadowView.topAnchor.constraint(equalTo: backgroundView.topAnchor),
+            shadowView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor),
+            shadowView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
+            shadowView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
 
-            backgroundView.topAnchor.constraint(
-                equalTo: contentView.topAnchor),
-            backgroundView.bottomAnchor.constraint(
-                equalTo: contentView.bottomAnchor),
-            backgroundView.leadingAnchor.constraint(
-                equalTo: contentView.leadingAnchor),
-            backgroundView.trailingAnchor.constraint(
-                equalTo: contentView.trailingAnchor),
+            backgroundView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            backgroundView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            backgroundView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            backgroundView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
 
             searchInput.widthAnchor.constraint(equalToConstant: 350),
-            searchInput.topAnchor.constraint(
-                equalTo: contentView.topAnchor,
-                constant: ViewConstants.spacing10),
-            searchInput.leadingAnchor.constraint(
-                equalTo: contentView.leadingAnchor,
-                constant: ViewConstants.spacing15),
+            searchInput.topAnchor.constraint(equalTo: contentView.topAnchor, constant: ViewConstants.spacing10),
+            searchInput.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: ViewConstants.spacing15),
 
-            settingsButton.centerYAnchor.constraint(
-                equalTo: searchInput.centerYAnchor),
-            settingsButton.leadingAnchor.constraint(
-                equalTo: searchInput.trailingAnchor,
-                constant: ViewConstants.spacing5),
-            settingsButton.trailingAnchor.constraint(
-                equalTo: contentView.trailingAnchor,
-                constant: -ViewConstants.spacing10),
+            settingsButton.centerYAnchor.constraint(equalTo: searchInput.centerYAnchor),
+            settingsButton.leadingAnchor.constraint(equalTo: searchInput.trailingAnchor, constant: ViewConstants.spacing5),
+            settingsButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -ViewConstants.spacing10),
 
-            tableScrollView.topAnchor.constraint(
-                equalTo: searchInput.bottomAnchor,
-                constant: ViewConstants.spacing10),
-            tableScrollView.bottomAnchor.constraint(
-                equalTo: contentView.bottomAnchor),
-            tableScrollView.leadingAnchor.constraint(
-                equalTo: contentView.leadingAnchor),
-            tableScrollView.trailingAnchor.constraint(
-               equalTo: contentView.trailingAnchor)
+            tableScrollView.topAnchor.constraint(equalTo: searchInput.bottomAnchor, constant: ViewConstants.spacing10),
+            tableScrollView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            tableScrollView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            tableScrollView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
         ])
     }
 
@@ -200,45 +170,34 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         view.wantsLayer = true
         view.layer?.backgroundColor = NSColor.clear.cgColor
 
-        keyboardEvents = LocalEventMonitor(mask: [.keyDown], handler:
-        { [weak self] event in
+        keyboardEvents = LocalEventMonitor(mask: [.keyDown]) { [weak self] event in
             let key = event.keyCode
             let modifiers = event.modifierFlags.rawValue
 
-            // TODO: Implement helper functions for modifiers.
             if let controller = self {
-                if modsContains(keys: OSCtrl, in: modifiers) &&
-                        key == kVK_ANSI_P ||
-                    modsContainsNone(in: modifiers) &&
-                        key == kVK_UpArrow
+                if modsContains(keys: OSCtrl, in: modifiers) && key == kVK_ANSI_P ||
+                   modsContainsNone(in: modifiers) && key == kVK_UpArrow
                 {
                     controller.programsTableViewSelection -= 1
-                } else if modsContains(keys: OSCtrl, in: modifiers) &&
-                        key == kVK_ANSI_N ||
-                    modsContainsNone(in: modifiers) &&
-                        (key == kVK_DownArrow)
+                } else if modsContains(keys: OSCtrl, in: modifiers) && key == kVK_ANSI_N ||
+                          modsContainsNone(in: modifiers) && key == kVK_DownArrow
                 {
                     controller.programsTableViewSelection += 1
                 }
 
-                if controller.programsTableViewSelection >
-                    controller.programsList.count-1
-                {
-                    controller.programsTableViewSelection =
-                        controller.programsList.count-1
+                if controller.programsTableViewSelection > controller.programsList.count-1 {
+                    controller.programsTableViewSelection = controller.programsList.count-1
                 } else if controller.programsTableViewSelection < 0 {
                     controller.programsTableViewSelection = 0
                 }
 
                 let select = controller.programsTableViewSelection
-                    self?.programsTableView.selectRowIndexes(
-                        IndexSet(integer: select),
-                        byExtendingSelection: false)
+                    self?.programsTableView.selectRowIndexes(IndexSet(integer: select), byExtendingSelection: false)
                     self?.programsTableView.scrollRowToVisible(select)
             }
 
             return event
-        })
+        }
 
         settingsPopover.delegate = self
 
@@ -290,7 +249,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
     @objc
     func openSettings() {
-        // HACK: This is an interseting behavior. When NSPopover appears 
+        // HACK: This is an interesting behavior. When NSPopover appears
         //       the first time, it always displays in the wrong location;
         //       however, showing it twice does result in the right
         //       location.
@@ -307,19 +266,16 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     }
 
     private func openProgram(_ program: Program) {
-        let url = URL(fileURLWithPath: program.path)
-            .appendingPathComponent(program.name+program.ext)
+        let url = URL(fileURLWithPath: program.path).appendingPathComponent(program.name+program.ext)
         let config = NSWorkspace.OpenConfiguration()
 
-        NSWorkspace.shared.openApplication(at: url,
-            configuration: config)
-        { [weak self] application, error in
+        // NOTE: This needs a window! Do not just copy-paste
+        //       this block elsewhere.
+        NSWorkspace.shared.openApplication(at: url, configuration: config) { [weak self] application, error in
             if let error = error {
                 print("\(error.localizedDescription)")
             } else {
                 print("Program opened successfully")
-                // NOTE: This needs a window! Do not just copy-paste
-                //       this block elsewhere.
                 DispatchQueue.main.async {
                     if let window = self?.view.window {
                         window.resignKey()
@@ -331,51 +287,46 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
     func controlTextDidChange(_ obj: Notification) {
         guard let searchInput = obj.object as? EditableNSTextField
-        else { return }
-
-        let programs = PathManager.shared.programs
+            else { return }
 
         programsList = []
-        for i in programs.indices {
-            var program = programs[i]
-            if programsList.count >= 10 {
-                break
-            }
-            if program.name.lowercased().contains(
-                searchInput.stringValue.lowercased())
-            {
-                let url = URL(fileURLWithPath: program.path)
-                    .appendingPathComponent(program.name+program.ext)
-                let image = NSWorkspace.shared.icon(forFile: url.path)
-                program.img = image
-                programsList.append(program)
+
+        if !searchInput.stringValue.isEmpty {
+            for path in PathManager.shared.paths {
+                if programsList.count >= 10 { break }
+
+                for i in path.value.indices {
+                    var prog = path.value[i]
+                    if programsList.count >= 10 { break }
+
+                    if prog.name.lowercased().contains(searchInput.stringValue.lowercased())
+                    {
+                        let url = URL(fileURLWithPath: prog.path).appendingPathComponent(prog.name+prog.ext)
+                        let image = NSWorkspace.shared.icon(forFile: url.path)
+                        prog.img = image
+                        programsList.append(prog)
+                    }
+                }
             }
         }
         reloadProgramsTableViewData()
 
         programsTableViewSelection = 0
-        programsTableView.selectRowIndexes(
-            IndexSet(integer: programsTableViewSelection),
-            byExtendingSelection: false)
+        programsTableView.selectRowIndexes(IndexSet(integer: programsTableViewSelection), byExtendingSelection: false)
         programsTableView.scrollRowToVisible(programsTableViewSelection)
     }
 
-    func control(_ control: NSControl, textView: NSTextView,
-        doCommandBy commandSelector: Selector) -> Bool
-    {
+    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
         if commandSelector == #selector(NSResponder.insertNewline(_:)) {
             if programsList.count > 0 {
                 let program = programsList[programsTableViewSelection]
                 openProgram(program)
-                NSApp.sendAction(#selector(NSResponder.selectAll(_:)),
-                    to: nil, from: self)
+                NSApp.sendAction(#selector(NSResponder.selectAll(_:)), to: nil, from: self)
             }
             return true
         } else if commandSelector == #selector(NSResponder.insertTab(_:)) {
             return true
-        } else if commandSelector == #selector(NSResponder.moveUp(_:)) ||
-            commandSelector == #selector(NSResponder.moveDown(_:))
-        {
+        } else if commandSelector == #selector(NSResponder.moveUp(_:)) || commandSelector == #selector(NSResponder.moveDown(_:)) {
             // Ignore arrows keys up or down because we use those to
             // navigate the programs list.
             return true
@@ -414,7 +365,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         // searchInput.stringValue
 
         let app = program.name + program.ext
-        let rangeToHighlight = 
+        let rangeToHighlight =
             (app.lowercased() as NSString)
                 .range(of: searchInput.stringValue.lowercased())
         let attributedString = NSMutableAttributedString(string: app)

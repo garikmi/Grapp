@@ -13,8 +13,7 @@ final class KeyDetectorButton: NSButton {
 
     override var acceptsFirstResponder: Bool { true }
 
-    // This removes default bahavior from NSButton, thus allowing mouse up
-    // events.
+    // This removes default bahavior from NSButton, thus allowing mouse up events.
     override func mouseDown(with event: NSEvent) {}
 
     override func mouseUp(with event: NSEvent) {
@@ -23,16 +22,13 @@ final class KeyDetectorButton: NSButton {
 
     override func keyDown(with event: NSEvent) {
         if event.keyCode == kVK_Escape || event.keyCode == kVK_Return {
+            // Ignore escape and return keys.
         } else if event.keyCode == kVK_Delete {
-            if let key = defaultKey,
-               let character = keyName(virtualKeyCode: UInt16(key))
-            {
+            if let key = defaultKey, let character = keyName(virtualKeyCode: UInt16(key)) {
                 title = character
             }
         } else {
-            if let character =
-                keyName(virtualKeyCode: UInt16(event.keyCode))
-            {
+            if let character = keyName(virtualKeyCode: UInt16(event.keyCode)) {
                 title = character
             }
             delegate?.keyWasSet(to: Int(event.keyCode))

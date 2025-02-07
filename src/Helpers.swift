@@ -15,9 +15,13 @@ func modsContainsNone(in modifiers: UInt) -> Bool {
     return (modifiers & OSMods) == 0
 }
 
+func containsFlags(key: Int, in flags: Int) -> Bool {
+    return (flags & key) == key
+}
+
 enum ViewConstants {
-    static let spacing2: CGFloat = 2
-    static let spacing5: CGFloat = 2
+    static let spacing2:  CGFloat =  2
+    static let spacing5:  CGFloat =  2
     static let spacing10: CGFloat = 10
     static let spacing15: CGFloat = 15
     static let spacing20: CGFloat = 20
@@ -38,10 +42,8 @@ func keyName(virtualKeyCode: UInt16) -> String? {
 
     //let source =
     //    TISCopyCurrentKeyboardLayoutInputSource().takeRetainedValue()
-    let source = TISCopyInputSourceForLanguage("en-US" as CFString)
-        .takeRetainedValue();
-    guard let ptr = TISGetInputSourceProperty(source,
-        kTISPropertyUnicodeKeyLayoutData)
+    let source = TISCopyInputSourceForLanguage("en-US" as CFString).takeRetainedValue();
+    guard let ptr = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)
     else {
         print("Could not get keyboard layout data")
         return nil
@@ -49,11 +51,9 @@ func keyName(virtualKeyCode: UInt16) -> String? {
     let layoutData = Unmanaged<CFData>.fromOpaque(ptr)
         .takeUnretainedValue() as Data
     let osStatus = layoutData.withUnsafeBytes {
-        UCKeyTranslate(
-            $0.bindMemory(to: UCKeyboardLayout.self).baseAddress,
-            virtualKeyCode, UInt16(kUCKeyActionDown), modifierKeys,
-            keyboardType, UInt32(kUCKeyTranslateNoDeadKeysMask),
-            &deadKeys, maxNameLength, &nameLength, &nameBuffer)
+        UCKeyTranslate($0.bindMemory(to: UCKeyboardLayout.self).baseAddress, virtualKeyCode,
+                       UInt16(kUCKeyActionDown), modifierKeys, keyboardType, UInt32(kUCKeyTranslateNoDeadKeysMask),
+                       &deadKeys, maxNameLength, &nameLength, &nameBuffer)
     }
     guard osStatus == noErr else {
         print("Code: \(virtualKeyCode) Status: \(osStatus)")
@@ -72,15 +72,18 @@ func keyName(virtualKeyCode: UInt16) -> String? {
     return character
 }
 
-func systemImage(_ name: String, _ size: NSFont.TextStyle,
-    _ scale: NSImage.SymbolScale,
-    _ configuration: NSImage.SymbolConfiguration) -> NSImage?
-{
+func isDirectory(_ path: String) -> Bool {
+    var isDirectory: ObjCBool = false
+    if FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory), isDirectory.boolValue {
+        return true
+    } else {
+        return false
+    }
+}
+
+func systemImage(_ name: String, _ size: NSFont.TextStyle, _ scale: NSImage.SymbolScale, _ configuration: NSImage.SymbolConfiguration) -> NSImage? {
     return NSImage(systemSymbolName: name, accessibilityDescription: nil)?
-        .withSymbolConfiguration(
-            NSImage.SymbolConfiguration(textStyle: size, scale: scale)
-                .applying(configuration)
-        )
+        .withSymbolConfiguration(NSImage.SymbolConfiguration(textStyle: size, scale: scale).applying(configuration))
 }
 
 func isDirectory(atPath path: String) -> Bool {
@@ -92,16 +95,16 @@ func isDirectory(atPath path: String) -> Bool {
 }
 
 extension String {
-    /// This converts string to UInt as a fourCharCode
+    // This converts string to UInt as a fourCharCode
     public var fourCharCodeValue: Int {
         var result: Int = 0
         if let data = self.data(using: String.Encoding.macOSRoman) {
-            data.withUnsafeBytes({ (rawBytes) in
+            data.withUnsafeBytes { (rawBytes) in
                 let bytes = rawBytes.bindMemory(to: UInt8.self)
                 for i in 0 ..< data.count {
                     result = result << 8 + Int(bytes[i])
                 }
-            })
+            }
         }
         return result
     }

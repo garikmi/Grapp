@@ -47,12 +47,12 @@ class PopoverPanel: NSPanel {
             {
                 resignKey()
                 return true
-                
+
             } else if modsContains(keys: OSCmd | OSShift,
                 in: modifiers) &&
                 key == kVK_ANSI_R
             {
-                PathManager.shared.rebuildIndex()
+                PathManager.shared.updateIndex()
                 return true
             } else if key == kVK_Escape {
                 resignKey()

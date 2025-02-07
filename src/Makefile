@@ -7,63 +7,46 @@ XCODE_PATH = $(shell xcode-select --print-path)
 
 EXEC = Grapp
 
-SRCMODULES = Helpers.swift EditableNSTextField.swift EventMonitor.swift \
-	PopoverPanel.swift SearchViewController.swift \
-	SettingsViewController.swift HotKeyManager.swift \
-	KeyDetectorButton.swift PathManager.swift PathsTableCellView.swift \
-	ProgramsTable.swift ShadowView.swift \
-	AppDelegate.swift main.swift
+SRCMODULES = Helpers.swift EditableNSTextField.swift EventMonitor.swift PopoverPanel.swift SearchViewController.swift \
+	SettingsViewController.swift HotKeyManager.swift KeyDetectorButton.swift PathManager.swift PathsTableCellView.swift \
+	ProgramsTable.swift ShadowView.swift DirMonitor.swift MenulessWindow.swift AboutViewController.swift AppDelegate.swift \
+	main.swift
 ARMOBJMODULES = $(addprefix ./arm64/,$(SRCMODULES:.swift=.o))
 X86OBJMODULES = $(addprefix ./x86_64/,$(SRCMODULES:.swift=.o))
 
-LIBS = 
+LIBS =
 
 FRAMEWORKS = -framework AppKit -framework ServiceManagement
 
-# HACK: Target is getting touched because timestamps of the generated
-#       object file don't change unless there's an actual change in the
-#       outputted object code. This results in this target running every
-#       single time. I'm not sure whether that's the exact reason, but
-#       I can't imagine why timestamps wouldn't change. When clang
-#       generates same exact executable, timestamps do change.
+# HACK: Target is getting touched because timestamps of the generated object file don't change unless there's an actual change in the
+#       outputted object code. This results in this target running every single time. I'm not sure whether that's the exact reason, but
+#       I can't imagine why timestamps wouldn't change. When clang generates same exact executable, timestamps do change.
 ./arm64/%.o: %.swift
-	swift -frontend -c -target arm64-apple-macos$(MACOS_VERSION) $(FLAGS) \
-		-primary-file $< $(filter-out $<, $(SRCMODULES)) $(LIBS) \
-		$(FRAMEWORKS) -sdk $(SDK) -module-name $(EXEC) -o $@ \
-		-emit-module && touch $@
+	swift -frontend -c -target arm64-apple-macos$(MACOS_VERSION) $(FLAGS) -primary-file $< $(filter-out $<, $(SRCMODULES)) $(LIBS) \
+		$(FRAMEWORKS) -sdk $(SDK) -module-name $(EXEC) -o $@ -emit-module && \
+	touch $@
 
 ifdef UNIVERSAL
 ./x86_64/%.o: %.swift
-	@swift -frontend -c -target x86_64-apple-macos$(MACOS_VERSION) \
-		$(FLAGS) -primary-file $< $(filter-out $<, $(SRCMODULES)) \
-		$(LIBS) $(FRAMEWORKS) -sdk $(SDK) -module-name $(EXEC) -o $@ \
-		-emit-module && touch $@
+	@swift -frontend -c -target x86_64-apple-macos$(MACOS_VERSION) $(FLAGS) -primary-file $< $(filter-out $<, $(SRCMODULES)) \
+		$(LIBS) $(FRAMEWORKS) -sdk $(SDK) -module-name $(EXEC) -o $@ -emit-module && \
+	touch $@
 endif
 
 ./arm64/$(EXEC): $(ARMOBJMODULES)
-	@ld -syslibroot $(SDK) -lSystem $(FRAMEWORKS) -arch arm64 \
-		-macos_version_min $(MACOS_VERSION).0 \
+	@ld -syslibroot $(SDK) -lSystem $(FRAMEWORKS) -arch arm64 -macos_version_min $(MACOS_VERSION).0 \
 		/Library/Developer/CommandLineTools/usr/lib/swift/macosx/libswiftCompatibilityPacks.a \
-		-sectcreate __TEXT __info_plist Info.plist \
-		-L /Library/Developer/CommandLineTools/usr/lib/swift/macosx -L \
-		/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/swift \
-		-no_objc_category_merging -L $(XCODE_PATH) -rpath \
-		Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx \
-		./arm64/main.o $(filter-out ./arm64/main.o, $(ARMOBJMODULES)) \
-		-o $@
+		-sectcreate __TEXT __info_plist Info.plist -L /Library/Developer/CommandLineTools/usr/lib/swift/macosx -L \
+		/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/swift -no_objc_category_merging -L $(XCODE_PATH) -rpath \
+		Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx ./arm64/main.o $(filter-out ./arm64/main.o, $(ARMOBJMODULES)) -o $@
 
 ifdef UNIVERSAL
 ./x86_64/$(EXEC): $(X86OBJMODULES)
-	@ld -syslibroot $(SDK) -lSystem $(FRAMEWORKS) -arch x86_64 \
-		-macos_version_min $(MACOS_VERSION).0 \
+	@ld -syslibroot $(SDK) -lSystem $(FRAMEWORKS) -arch x86_64 -macos_version_min $(MACOS_VERSION).0 \
 		/Library/Developer/CommandLineTools/usr/lib/swift/macosx/libswiftCompatibilityPacks.a \
-		-sectcreate __TEXT __info_plist Info.plist \
-		-L /Library/Developer/CommandLineTools/usr/lib/swift/macosx -L \
-		/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/swift \
-		-no_objc_category_merging -L $(XCODE_PATH) -rpath \
-		Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx \
-		./x86_64/main.o $(filter-out ./x86_64/main.o, $(X86OBJMODULES)) \
-		-o $@
+		-sectcreate __TEXT __info_plist Info.plist -L /Library/Developer/CommandLineTools/usr/lib/swift/macosx -L \
+		/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/swift -no_objc_category_merging -L $(XCODE_PATH) -rpath \
+		Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx ./x86_64/main.o $(filter-out ./x86_64/main.o, $(X86OBJMODULES)) -o $@
 endif
 
 ifdef UNIVERSAL
@@ -74,7 +57,6 @@ $(EXEC): ./arm64/$(EXEC)
 	@lipo -create -output $(EXEC) $^
 endif
 
-
 $(EXEC).app: $(EXEC)
 	@rm -rf $@
 	@mkdir -p $@/Contents/MacOS/ && \
@@ -82,16 +64,20 @@ $(EXEC).app: $(EXEC)
 	cp Info.plist $@/Contents/ && \
 	cp resources/AppIcon.icns $@/Contents/Resources/ && \
 	cp $(EXEC) $@/Contents/MacOS/ && \
-	$(if $(DEBUG), \
-		codesign --entitlements Grapp.entitlements \
-		-s ${APPLE_DEVELOPMENT} -f --timestamp -o runtime $(EXEC).app, \
-		codesign -s ${APPLE_DEVELOPER_ID_APPLICATION} -f --timestamp \
-		-o runtime $(EXEC).app)
+	$(if $(DEBUG), codesign --entitlements Grapp.entitlements -s ${APPLE_DEVELOPMENT} -f --timestamp -o runtime $(EXEC).app, \
+		codesign -s ${APPLE_DEVELOPER_ID_APPLICATION} -f --timestamp -o runtime $(EXEC).app)
 
 all: $(EXEC).app
 
-run: all
-	@open $(EXEC).app
+clear:
+	clear
+
+kill:
+	-pkill $(EXEC)
+
+run: clear kill all
+# 	@open $(EXEC).app
+	./$(EXEC)
 
 clean:
 	rm -rf $(EXEC) $(EXEC).app arm64 x86_64

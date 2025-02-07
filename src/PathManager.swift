@@ -3,86 +3,133 @@ import AppKit
 struct Program {
     let path: String
     let name: String
-    let ext: String
-    var img: NSImage?
+    let ext : String
+    var img : NSImage?
 }
 
 final class PathManager {
     static let shared = PathManager()
 
-    // TODO: Filesystem events to watch changes on these directories and
-    //       rebuild index when needed.
+    private var dirMonitor: DirMonitor?
+
     // NOTE: These are default paths where MacOS's default programs are
     //       stored. This list should be updated if something changes in
     //       newer MacOS version.
-    static let defaultPaths = ["/Applications", "/System/Applications",
-        "/System/Applications/Utilities", "/System/Library/CoreServices",
+    static let defaultPaths = [
+        "/Applications",
+        "/System/Applications",
+        "/System/Applications/Utilities",
+        "/System/Library/CoreServices",
         "/Applications/Xcode.app/Contents/Applications",
-        "/System/Library/CoreServices/Applications"]
-    var userPaths: [String] = []
-    private(set) var programs: [Program] = []
+        "/System/Library/CoreServices/Applications"
+    ]
+    private(set) var paths: [String: [Program]] = [:]
 
     private let fileManager = FileManager.default
 
     private init() {
-        if let paths =
-            UserDefaults.standard.stringArray(forKey: "programPaths")
-        {
-            for path in paths {
-                addPath(path)
+        // UserDefaults.standard.removeObject(forKey: "programPaths")
+        if let dirs = UserDefaults.standard.stringArray(forKey: "programPaths"), !dirs.isEmpty {
+            for dir in dirs {
+                addPath(dir)
             }
         } else {
-            userPaths += Self.defaultPaths
+            for path in PathManager.defaultPaths {
+                addPath(path)
+            }
         }
     }
 
     deinit {}
 
     public func addPath(_ path: String) {
-        if !userPaths.contains(path) {
-            userPaths.append(path)
+        if isDirectory(path) {
+            paths[path] = []
         }
     }
 
     public func removePath(_ path: String) {
-        userPaths.removeAll { $0 == path }
+        paths.removeValue(forKey: path)
     }
 
-    public func removeEmpty() {
-        userPaths.removeAll { $0.isEmpty }
+    public func resetPaths() {
+        paths = [:]
+        for path in PathManager.defaultPaths {
+            addPath(path)
+        }
+    }
+
+    public func contains(_ name: String) -> Bool {
+        for path in paths {
+            for prog in path.value {
+                if prog.name == name {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    public func refreshFilesystemWatchers() {
+        dirMonitor?.stop()
+        dirMonitor = nil
+
+        var buf: [String] = []
+        for path in paths {
+            buf.append(path.key)
+        }
+
+        dirMonitor = DirMonitor(paths: buf, queue: DispatchQueue.global(qos: .userInitiated))
+        // _ = dirMonitor!.start()
+        if dirMonitor!.start() {
+            print("Started monitoring directories.")
+        } else {
+            print("Failed to start monitoring directories.")
+        }
     }
 
     public func savePaths() {
-        UserDefaults.standard.set(userPaths, forKey: "programPaths")
-    }
-
-    public func reset() {
-        userPaths = []
-        userPaths += Self.defaultPaths
-        savePaths()
-    }
-
-    public func rebuildIndex() {
-        programs.removeAll(keepingCapacity: true)
-        for path in userPaths {
-            do {
-                let items = try fileManager.contentsOfDirectory(
-                    atPath: path)
-                for item in items {
-                    let name = String(item.dropLast(4))
-
-                    if item.hasSuffix(".app") {
-                        if !programs.contains(where: { name == $0.name }) {
-                            programs.append(
-                                Program(
-                                    path: path, name: name, ext: ".app",
-                                    img: nil))
-                        }
-                    }
-                }
-            } catch {
-                print("Error reading directory: \(error.localizedDescription)")
-            }
+        var buf: [String] = []
+        for path in paths {
+            buf.append(path.key)
         }
+        UserDefaults.standard.set(buf, forKey: "programPaths")
+    }
+
+    // PERF: Optimize some more. Do not rebuild the entire array, instead
+    //       remove or add only needed programs. Thereby, limiting the
+    //       amount of allocations.
+    public func rebuildIndex(at path: String) {
+        paths[path] = indexDirs(at: path, deepness: 2)
+    }
+
+    public func indexDirs(at path: String, deepness: Int) -> [Program] {
+        var array: [Program] = []
+
+        do {
+            var items = try fileManager.contentsOfDirectory(atPath: path)
+            items = items.filter({ isDirectory((path + "/" + $0)) })
+
+            for item in items {
+                let name = String(item.dropLast(4))
+
+                if item.hasSuffix(".app"), !contains(name) {
+                    array.append(Program(path: path, name: name, ext: ".app", img: nil))
+                }
+                if deepness > 0 {
+                    array += indexDirs(at: path + "/" + item, deepness: deepness-1)
+                }
+            }
+        } catch { print("Error: \(error.localizedDescription)") }
+
+        return array
+    }
+
+    public func updateIndex() {
+        print("updateIndex()")
+        for path in paths {
+            rebuildIndex(at: path.key)
+        }
+        refreshFilesystemWatchers()
     }
 }
