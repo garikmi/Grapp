@@ -206,7 +206,6 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
         }
 
         settingsPopover.delegate = self
-
         searchInput.delegate = self
 
         tableScrollView.documentView = programsTableView
@@ -255,14 +254,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
 
     @objc
     func openSettings() {
-        // HACK: This is an interesting behavior. When NSPopover appears
-        //       the first time, it always displays in the wrong location;
-        //       however, showing it twice does result in the right
-        //       location.
-        settingsPopover.show(relativeTo: settingsButton.bounds,
-            of: settingsButton, preferredEdge: .maxY)
-        settingsPopover.show(relativeTo: settingsButton.bounds,
-            of: settingsButton, preferredEdge: .maxY)
+        settingsPopover.show(relativeTo: settingsButton.bounds, of: settingsButton, preferredEdge: .maxY)
     }
 
     @objc
@@ -275,17 +267,10 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
         let url = URL(fileURLWithPath: program.path).appendingPathComponent(program.name+program.ext)
         let config = NSWorkspace.OpenConfiguration()
 
-        // NOTE: This needs a window! Do not just copy-paste this block elsewhere.
-        NSWorkspace.shared.openApplication(at: url, configuration: config) { [weak self] application, error in
-            if let error = error {
-                print("\(error.localizedDescription)")
-            } else {
-                print("Program opened successfully")
-                DispatchQueue.main.async {
-                    if let window = self?.view.window {
-                        window.resignKey()
-                    }
-                }
+        NSWorkspace.shared.openApplication(at: url, configuration: config)
+        DispatchQueue.main.async { [weak self] in
+            if let window = self?.view.window {
+                window.resignKey()
             }
         }
     }
