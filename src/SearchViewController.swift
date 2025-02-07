@@ -16,7 +16,8 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 {
     private var keyboardEvents: EventMonitor?
 
-    private var programsList: [Program] = []
+    private var programsList: [Program] = Array(repeating: Program(), count: 10)
+    private var listIndex = 0
 
     private var programsTableViewSelection = 0
 
@@ -185,8 +186,8 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
                     controller.programsTableViewSelection += 1
                 }
 
-                if controller.programsTableViewSelection > controller.programsList.count-1 {
-                    controller.programsTableViewSelection = controller.programsList.count-1
+                if controller.programsTableViewSelection > controller.listIndex-1 {
+                    controller.programsTableViewSelection = controller.listIndex-1
                 } else if controller.programsTableViewSelection < 0 {
                     controller.programsTableViewSelection = 0
                 }
@@ -239,7 +240,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     }
 
     private func reloadProgramsTableViewData() {
-        if programsList.count > 0 {
+        if listIndex > 0 {
             tableViewHeightAnchor?.constant = 210
         } else {
             tableViewHeightAnchor?.constant = 0
@@ -289,22 +290,19 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         guard let searchInput = obj.object as? EditableNSTextField
             else { return }
 
-        programsList = []
-
+        listIndex = 0
         if !searchInput.stringValue.isEmpty {
-            for path in PathManager.shared.paths {
-                if programsList.count >= 10 { break }
-
+            outerloop: for path in PathManager.shared.paths {
                 for i in path.value.indices {
                     var prog = path.value[i]
-                    if programsList.count >= 10 { break }
+                    if listIndex >= 10 { break outerloop }
 
-                    if prog.name.lowercased().contains(searchInput.stringValue.lowercased())
-                    {
-                        let url = URL(fileURLWithPath: prog.path).appendingPathComponent(prog.name+prog.ext)
-                        let image = NSWorkspace.shared.icon(forFile: url.path)
-                        prog.img = image
-                        programsList.append(prog)
+                    if prog.name.lowercased().contains(searchInput.stringValue.lowercased()) {
+                        programsList[listIndex].path = prog.path
+                        programsList[listIndex].name = prog.name
+                        programsList[listIndex].ext = prog.ext
+                        programsList[listIndex].img = NSWorkspace.shared.icon(forFile: URL(fileURLWithPath: prog.path).appendingPathComponent(prog.name+prog.ext).path)
+                        listIndex += 1
                     }
                 }
             }
@@ -318,7 +316,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
         if commandSelector == #selector(NSResponder.insertNewline(_:)) {
-            if programsList.count > 0 {
+            if listIndex > 0 {
                 let program = programsList[programsTableViewSelection]
                 openProgram(program)
                 NSApp.sendAction(#selector(NSResponder.selectAll(_:)), to: nil, from: self)
@@ -344,7 +342,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     }
 
     func numberOfRows(in tableView: NSTableView) -> Int {
-        return programsList.count
+        return listIndex
     }
 
     func tableView(_ tableView: NSTableView,
@@ -365,13 +363,9 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         // searchInput.stringValue
 
         let app = program.name + program.ext
-        let rangeToHighlight =
-            (app.lowercased() as NSString)
-                .range(of: searchInput.stringValue.lowercased())
+        let rangeToHighlight = (app.lowercased() as NSString).range(of: searchInput.stringValue.lowercased())
         let attributedString = NSMutableAttributedString(string: app)
-        attributedString.addAttributes(
-            [.foregroundColor: NSColor.labelColor],
-            range: rangeToHighlight)
+        attributedString.addAttributes([.foregroundColor: NSColor.labelColor], range: rangeToHighlight)
 
         cell.titleField.attributedStringValue = attributedString
         cell.progPathLabel.stringValue = program.path

@@ -281,8 +281,7 @@ class SettingsViewController: NSViewController,
     override func viewWillAppear() {
         super.viewWillAppear()
 
-        // PERF: Maybe we shouldn't fetch it on every appearance?
-        //       Only do it in AppDelegate?
+        // Fetch the saved key codes and modifiers.
         if let code = UserDefaults.standard.object(forKey: "keyCode") as? Int {
             keyCode = code
         }

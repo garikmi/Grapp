@@ -1,10 +1,10 @@
 import AppKit
 
 struct Program {
-    let path: String
-    let name: String
-    let ext : String
-    var img : NSImage?
+    var path: String = ""
+    var name: String = ""
+    var ext : String = ""
+    var img : NSImage? = nil
 }
 
 final class PathManager {
