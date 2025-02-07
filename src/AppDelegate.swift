@@ -17,11 +17,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         window.makeKeyAndOrderFront(nil)
 
-        HotKeyManager.shared.handler =
-        { (inHandlerCallRef, inEvent, inUserData) -> OSStatus in
-            if let delegate =
-                NSApplication.shared.delegate as? AppDelegate
-            {
+        HotKeyManager.shared.handler = { (inHandlerCallRef, inEvent, inUserData) -> OSStatus in
+            if let delegate = NSApplication.shared.delegate as? AppDelegate {
                 let window = delegate.window
                 if window.isKeyWindow {
                     window.resignKey()
@@ -59,12 +56,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         return true
     }
 
-    public func toggleLaunchAtLogin() {
+    public func toggleLaunchAtLogin(isOn status: Bool) {
         let service = SMAppService.mainApp
-        if service.status == .enabled {
-            try? service.unregister()
-        } else {
+        if status, service.status != .enabled {
             try? service.register()
+        } else if service.status == .enabled {
+            try? service.unregister()
         }
     }
 

@@ -80,7 +80,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
 
     private var settingsButton: NSButton = {
         let button = NSButton()
-        button.image = systemImage("gear.circle.fill", .title1, .large, .init(paletteColors: [.labelColor, .systemGray]))
+        button.image = systemImage("gear.circle.fill", .title1, .large, .init(paletteColors: [.white, .systemGray]))
         button.isBordered = false
         button.action = #selector(openSettings)
         button.sizeToFit()

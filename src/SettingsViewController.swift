@@ -15,10 +15,8 @@ class SettingsViewController: NSViewController,
 
     private var paths: [String] = []
 
-    // NOTE:  PERF: This is very slow to initialize because it creates a
-    //             a new process. This also cannot be done on a separate
-    //             thread. This sucks because the program now takes
-    //             considerably longer to launch.
+    // PERF: This is very slow to initialize because it creates a new process. This also cannot be done on a separate
+    //       thread. This sucks because the program now takes considerably longer to launch.
     private let dirPicker: NSOpenPanel = {
         let panel = NSOpenPanel()
         panel.message = "Select a directory to search applications in . . ."
@@ -139,8 +137,6 @@ class SettingsViewController: NSViewController,
         table.allowsColumnSelection = false
         table.addTableColumn(NSTableColumn(identifier: NSUserInterfaceItemIdentifier("Paths")))
 
-        //rowHeight cgfloat must see doc
-
         table.translatesAutoresizingMaskIntoConstraints = false
         return table
     }()
@@ -161,17 +157,27 @@ class SettingsViewController: NSViewController,
         return control
     }()
 
-    private var launchAtLoginButton: NSButton = {
-        let button = NSButton()
-        button.title = "Launch at login - OFF"
-        button.action = #selector(launchAtLogin)
-        button.setButtonType(.toggle)
-        button.sizeToFit()
-        button.bezelStyle = .rounded
-        button.isBordered = false
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
+    private var launchAtLoginLabel: NSTextField = {
+        let textField = NSTextField(labelWithString: "Launch at login")
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
     }()
+
+    private var launchAtLoginToggle: NSSegmentedControl = {
+        let control = NSSegmentedControl()
+        control.segmentCount = 2
+        control.segmentStyle = .roundRect
+
+        control.setLabel("Off", forSegment: 0)
+        control.setLabel("On", forSegment: 1)
+
+        control.setToolTip("Off", forSegment: 0)
+        control.setToolTip("On", forSegment: 1)
+
+        control.translatesAutoresizingMaskIntoConstraints = false
+        return control
+    }()
+
 
     private var resetAllButton: NSButton = {
         let button = NSButton()
@@ -199,7 +205,8 @@ class SettingsViewController: NSViewController,
         view.addSubview(tableScrollView)
         view.addSubview(pathsControl)
 
-        view.addSubview(launchAtLoginButton)
+        view.addSubview(launchAtLoginLabel)
+        view.addSubview(launchAtLoginToggle)
         view.addSubview(resetAllButton)
     }
 
@@ -242,10 +249,13 @@ class SettingsViewController: NSViewController,
             pathsControl.topAnchor.constraint(equalTo: tableScrollView.bottomAnchor, constant: ViewConstants.spacing10),
             pathsControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: ViewConstants.spacing10),
 
-            launchAtLoginButton.topAnchor.constraint(equalTo: pathsControl.bottomAnchor, constant: ViewConstants.spacing10),
-            launchAtLoginButton.trailingAnchor.constraint(equalTo: resetAllButton.leadingAnchor, constant: -ViewConstants.spacing10),
+            launchAtLoginLabel.topAnchor.constraint(equalTo: pathsControl.bottomAnchor, constant: ViewConstants.spacing10),
+            launchAtLoginLabel.trailingAnchor.constraint(equalTo: launchAtLoginToggle.leadingAnchor, constant: -ViewConstants.spacing10),
 
-            resetAllButton.centerYAnchor.constraint(equalTo: launchAtLoginButton.centerYAnchor),
+            launchAtLoginToggle.firstBaselineAnchor.constraint(equalTo: launchAtLoginLabel.firstBaselineAnchor),
+            launchAtLoginToggle.trailingAnchor.constraint(equalTo: resetAllButton.leadingAnchor, constant: -ViewConstants.spacing15),
+
+            resetAllButton.firstBaselineAnchor.constraint(equalTo: launchAtLoginLabel.firstBaselineAnchor),
             resetAllButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -ViewConstants.spacing10),
             resetAllButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -ViewConstants.spacing10),
         ])
@@ -261,7 +271,7 @@ class SettingsViewController: NSViewController,
         ctrlButton.target = self
         shiftButton.target = self
         recordButton.delegate = self
-        launchAtLoginButton.target = self
+        launchAtLoginLabel.target = self
         resetAllButton.target = self
 
         recordButton.defaultKey = kVK_Space
@@ -273,6 +283,12 @@ class SettingsViewController: NSViewController,
 
         pathsControl.target = self
         pathsControl.action = #selector(affectPaths(_:))
+
+        pathsControl.target = self
+        pathsControl.action = #selector(affectPaths(_:))
+
+        launchAtLoginToggle.target = self
+        launchAtLoginToggle.action = #selector(affectLaunchAtLogin(_:))
 
         addSubviews()
         setConstraints()
@@ -345,18 +361,16 @@ class SettingsViewController: NSViewController,
     }
 
     @objc
-    private func launchAtLogin() {
-        delegate.toggleLaunchAtLogin()
+    private func launchAtLogin(isOn status: Bool) {
+        delegate.toggleLaunchAtLogin(isOn: status)
         launchAtLoginStatus()
     }
 
     private func launchAtLoginStatus() {
         if delegate.willLaunchAtLogin() {
-            launchAtLoginButton.title = "Launch at login - ON"
-            launchAtLoginButton.state = .on
+            launchAtLoginToggle.setSelected(true, forSegment: 1)
         } else {
-            launchAtLoginButton.title = "Launch at login - OFF"
-            launchAtLoginButton.state = .off
+            launchAtLoginToggle.setSelected(true, forSegment: 0)
         }
     }
 
@@ -447,6 +461,21 @@ class SettingsViewController: NSViewController,
                 paths.remove(at: pathsTableView.selectedRow)
                 pathsTableView.reloadData()
             }
+            break
+        default:
+            break
+        }
+    }
+
+    @objc
+    private func affectLaunchAtLogin(_ sender: NSSegmentedControl) {
+        let selectedSegment = sender.selectedSegment
+        switch selectedSegment {
+        case 0:
+            launchAtLogin(isOn: false)
+            break
+        case 1:
+            launchAtLogin(isOn: true)
             break
         default:
             break
