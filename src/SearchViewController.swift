@@ -11,13 +11,14 @@ struct ProgramWeighted {
     let weight: Int
 }
 
-class SearchViewController: NSViewController, NSTextFieldDelegate,
-    NSPopoverDelegate, NSTableViewDataSource, NSTableViewDelegate
-{
+fileprivate let maxItems = 10
+
+class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDelegate, NSTableViewDataSource, NSTableViewDelegate {
     private var keyboardEvents: EventMonitor?
 
-    private var programsList: [Program] = Array(repeating: Program(), count: 10)
     private var listIndex = 0
+    private var programsList: [Program] = Array(repeating: Program(), count: maxItems)
+    private var programsListCells: [ProgramsTableViewCell] = []
 
     private var programsTableViewSelection = 0
 
@@ -109,8 +110,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         table.allowsColumnReordering = false
         table.allowsColumnResizing = false
         table.allowsColumnSelection = false
-        table.addTableColumn(NSTableColumn(
-            identifier: NSUserInterfaceItemIdentifier("Program")))
+        table.addTableColumn(NSTableColumn(identifier: NSUserInterfaceItemIdentifier("Program")))
 
         table.doubleAction = #selector(tableDoubleClick)
 
@@ -167,6 +167,11 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        // Initialize an array of reusable cells.
+        for _ in 0..<maxItems {
+            programsListCells.append(ProgramsTableViewCell())
+        }
 
         view.wantsLayer = true
         view.layer?.backgroundColor = NSColor.clear.cgColor
@@ -270,8 +275,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         let url = URL(fileURLWithPath: program.path).appendingPathComponent(program.name+program.ext)
         let config = NSWorkspace.OpenConfiguration()
 
-        // NOTE: This needs a window! Do not just copy-paste
-        //       this block elsewhere.
+        // NOTE: This needs a window! Do not just copy-paste this block elsewhere.
         NSWorkspace.shared.openApplication(at: url, configuration: config) { [weak self] application, error in
             if let error = error {
                 print("\(error.localizedDescription)")
@@ -287,15 +291,14 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     }
 
     func controlTextDidChange(_ obj: Notification) {
-        guard let searchInput = obj.object as? EditableNSTextField
-            else { return }
+        guard let searchInput = obj.object as? EditableNSTextField else { return }
 
         listIndex = 0
         if !searchInput.stringValue.isEmpty {
             outerloop: for path in PathManager.shared.paths {
                 for i in path.value.indices {
-                    var prog = path.value[i]
-                    if listIndex >= 10 { break outerloop }
+                    if listIndex >= maxItems { break outerloop }
+                    let prog = path.value[i]
 
                     if prog.name.lowercased().contains(searchInput.stringValue.lowercased()) {
                         programsList[listIndex].path = prog.path
@@ -325,8 +328,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         } else if commandSelector == #selector(NSResponder.insertTab(_:)) {
             return true
         } else if commandSelector == #selector(NSResponder.moveUp(_:)) || commandSelector == #selector(NSResponder.moveDown(_:)) {
-            // Ignore arrows keys up or down because we use those to
-            // navigate the programs list.
+            // Ignore arrows up and down because we use those to navigate the programs list.
             return true
         }
 
@@ -351,16 +353,9 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         return ProgramsTableRowView()
     }
 
-    func tableView(_ tableView: NSTableView,
-        viewFor tableColumn: NSTableColumn?, row: Int) -> NSView?
-    {
-        let cell = ProgramsTableViewCell()
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        let cell = programsListCells[row]
         let program = programsList[row]
-
-        // PERF: This is very slow, even with 10 items on the list! It has
-        //       to be the image of concern. UIKit has reusable cells,
-        //       is that possible? Or is fetching an image is slow?
-        // searchInput.stringValue
 
         let app = program.name + program.ext
         let rangeToHighlight = (app.lowercased() as NSString).range(of: searchInput.stringValue.lowercased())
