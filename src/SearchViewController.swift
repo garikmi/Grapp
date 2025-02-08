@@ -54,8 +54,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
 
     private var contentView: NSView = {
         let view = NSView()
-        // Clip all content to window's rounded frame emulated by
-        // backgroundView.
+        // Clip all content to window's rounded frame emulated by backgroundView.
         view.wantsLayer = true
         view.layer?.masksToBounds = true
         view.layer?.cornerRadius = windowCornerRadius

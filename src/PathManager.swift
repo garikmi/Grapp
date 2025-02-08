@@ -100,6 +100,7 @@ final class PathManager {
     //       remove or add only needed programs. Thereby, limiting the
     //       amount of allocations.
     public func rebuildIndex(at path: String) {
+        paths[path] = []
         paths[path] = indexDirs(at: path, deepness: 2)
     }
 

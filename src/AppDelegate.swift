@@ -81,41 +81,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     // NOTE: This function is triggered by DirMonitor.
     public func fsEventTriggered(_ path: String, _ flags: Int) {
-        var shouldReload = false
-        print("PATH: \(path)")
-        // if containsFlags(key: kFSEventStreamEventFlagNone, in: flags) {
-        // }
-        // if containsFlags(key: kFSEventStreamEventFlagRootChanged, in: flags) {
-        // }
-        // if containsFlags(key: kFSEventStreamEventFlagMustScanSubDirs, in: flags) {
-        // }
-        // if containsFlags(key: kFSEventStreamEventFlagItemInodeMetaMod, in: flags) {
-        // }
-        if containsFlags(key: kFSEventStreamEventFlagItemCreated, in: flags) {
-            print("    CREATED")
-            shouldReload = true
-        }
-        if containsFlags(key: kFSEventStreamEventFlagItemRemoved, in: flags) {
-            print("    REMOVED")
-            shouldReload = true
-        }
-        if containsFlags(key: kFSEventStreamEventFlagItemCloned, in: flags) {
-            print("    CLONED")
-            shouldReload = true
-        }
-        if containsFlags(key: kFSEventStreamEventFlagItemRenamed, in: flags) {
-            print("    RENAMED")
-            shouldReload = true
-        }
-
-        // TODO: This should also trigger SearchViewController's search re-index.
-        if shouldReload {
+        if containsFlags(key: kFSEventStreamEventFlagItemCreated, in: flags) ||
+           containsFlags(key: kFSEventStreamEventFlagItemRemoved, in: flags) ||
+           containsFlags(key: kFSEventStreamEventFlagItemCloned, in: flags)  ||
+           containsFlags(key: kFSEventStreamEventFlagItemRenamed, in: flags)
+        {
             for dir in PathManager.shared.paths {
                 if path.hasPrefix(dir.key) {
                     PathManager.shared.rebuildIndex(at: dir.key)
                 }
             }
-            PathManager.shared.refreshFilesystemWatchers()
         }
     }
 }

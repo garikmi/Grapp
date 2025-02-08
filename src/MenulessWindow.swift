@@ -25,6 +25,7 @@ class MenulessWindow: NSWindow {
         if event.type == NSEvent.EventType.keyDown {
             if modsContains(keys: OSCmd, in: modifiers) && key == kVK_ANSI_W {
                 performClose(nil)
+                return true
             }
         }
 
