@@ -317,8 +317,7 @@ class SettingsViewController: NSViewController,
     override func viewWillDisappear() {
         super.viewWillDisappear()
 
-        HotKeyManager.shared.registerHotKey(key: keyCode,
-            modifiers: modifiers)
+        HotKeyManager.shared.registerHotKey(key: keyCode, modifiers: modifiers)
 
         UserDefaults.standard.set(keyCode, forKey: "keyCode")
         UserDefaults.standard.set(modifiers, forKey: "keyModifiers")

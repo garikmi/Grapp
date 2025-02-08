@@ -149,7 +149,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
             backgroundView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             backgroundView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
 
-            searchInput.widthAnchor.constraint(equalToConstant: 350),
+            searchInput.widthAnchor.constraint(equalToConstant: 400),
             searchInput.topAnchor.constraint(equalTo: contentView.topAnchor, constant: ViewConstants.spacing10),
             searchInput.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: ViewConstants.spacing15),
 
@@ -197,8 +197,8 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
                 }
 
                 let select = controller.programsTableViewSelection
-                    self?.programsTableView.selectRowIndexes(IndexSet(integer: select), byExtendingSelection: false)
-                    self?.programsTableView.scrollRowToVisible(select)
+                self?.programsTableView.selectRowIndexes(IndexSet(integer: select), byExtendingSelection: false)
+                self?.programsTableView.scrollRowToVisible(select)
             }
 
             return event
@@ -228,8 +228,13 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
 
         view.window?.makeFirstResponder(searchInput)
         // searchInput should select all text whenever window appears.
-        NSApp.sendAction(#selector(NSResponder.selectAll(_:)),
-            to: nil, from: self)
+        NSApp.sendAction(#selector(NSResponder.selectAll(_:)), to: nil, from: self)
+    }
+
+    override func viewWillAppear() {
+        super.viewWillAppear()
+
+        PathManager.shared.touchPaths()
     }
 
     override func viewDidDisappear() {

@@ -133,4 +133,11 @@ final class PathManager {
         }
         refreshFilesystemWatchers()
     }
+
+    // Touch paths to load them into CPUs cache.
+    public func touchPaths() {
+        for path in paths {
+            _ = path
+        }
+    }
 }

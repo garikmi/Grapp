@@ -35,8 +35,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         {
             HotKeyManager.shared.registerHotKey(key: code, modifiers: mods)
         } else {
-            // NOTE: This is the default shortcut. If you want to change
-            //       it, do not forget to change it in other files
+            // NOTE: This is the default shortcut. If you want to change it, do not forget to change it in other files
             //       (SettingsViewController).
             HotKeyManager.shared.registerHotKey(key: kVK_Space, modifiers: optionKey)
         }
@@ -79,7 +78,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         aboutWindow.makeKeyAndOrderFront(nil)
     }
 
-    // NOTE: This function is triggered by DirMonitor.
+    // NOTE: This function act like a callback is triggered by DirMonitor when file system events occur.
     public func fsEventTriggered(_ path: String, _ flags: Int) {
         if containsFlags(key: kFSEventStreamEventFlagItemCreated, in: flags) ||
            containsFlags(key: kFSEventStreamEventFlagItemRemoved, in: flags) ||
