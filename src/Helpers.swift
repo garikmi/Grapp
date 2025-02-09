@@ -86,14 +86,6 @@ func systemImage(_ name: String, _ size: NSFont.TextStyle, _ scale: NSImage.Symb
         .withSymbolConfiguration(NSImage.SymbolConfiguration(textStyle: size, scale: scale).applying(configuration))
 }
 
-func isDirectory(atPath path: String) -> Bool {
-    var isDir: ObjCBool = false
-    if FileManager.default.fileExists(atPath: path, isDirectory: &isDir) {
-        return isDir.boolValue
-    }
-    return false
-}
-
 extension String {
     // This converts string to UInt as a fourCharCode
     public var fourCharCodeValue: Int {

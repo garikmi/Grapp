@@ -44,7 +44,6 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
         effect.wantsLayer = true
         effect.layer?.masksToBounds = true
 
-        effect.layer?.borderColor = NSColor.labelColor.withAlphaComponent(0.2).cgColor
         effect.layer?.borderWidth = 1
         effect.layer?.cornerRadius = windowCornerRadius
 
@@ -167,10 +166,15 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        // NOTE: This needs removeObserver on deinit?
+        DistributedNotificationCenter.default.addObserver(self, selector: #selector(osThemeChanged(sender:)), name: NSNotification.Name(rawValue: "AppleInterfaceThemeChangedNotification"), object: nil)
+
         // Initialize an array of reusable cells.
         for _ in 0..<maxItems {
             programsListCells.append(ProgramsTableViewCell())
         }
+
+        updateViewsBasedOnTheme()
 
         view.wantsLayer = true
         view.layer?.backgroundColor = NSColor.clear.cgColor
@@ -360,6 +364,18 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
     func tableViewSelectionDidChange(_ notification: Notification) {
         if programsTableView.selectedRow != programsTableViewSelection {
             programsTableViewSelection = programsTableView.selectedRow
+        }
+    }
+
+    @objc func osThemeChanged(sender: NSNotification) {
+        updateViewsBasedOnTheme()
+    }
+
+    @objc func updateViewsBasedOnTheme() {
+        if NSApp.windows.first?.effectiveAppearance.bestMatch(from: [.darkAqua, .vibrantDark]) == .darkAqua { // dark
+            backgroundView.layer?.borderColor = NSColor.white.withAlphaComponent(0.2).cgColor
+        } else { // light
+            backgroundView.layer?.borderColor = NSColor.black.withAlphaComponent(0.2).cgColor
         }
     }
 }
