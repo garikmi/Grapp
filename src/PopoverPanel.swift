@@ -7,8 +7,7 @@ class PopoverPanel: NSPanel {
     init(viewController: NSViewController) {
         super.init(
             contentRect: CGRect(x: 0, y: 0, width: 100, height: 100),
-            styleMask: [.borderless, .nonactivatingPanel, .utilityWindow,
-                        .fullSizeContentView],
+            styleMask: [.borderless, .nonactivatingPanel, .utilityWindow, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
@@ -26,8 +25,7 @@ class PopoverPanel: NSPanel {
         titlebarAppearsTransparent = true
 
         animationBehavior = .none
-        collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary,
-                              .transient]
+        collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary, .transient]
         isReleasedWhenClosed = false
         hidesOnDeactivate = false
     }
@@ -37,21 +35,13 @@ class PopoverPanel: NSPanel {
         let key = event.keyCode
 
         if event.type == NSEvent.EventType.keyDown {
-            if modsContains(keys: OSCmd, in: modifiers) &&
-                key == kVK_ANSI_Q
-            {
+            if modsContains(keys: OSCmd, in: modifiers) && key == kVK_ANSI_Q {
                 NSApplication.shared.terminate(self)
                 return true
-            } else if modsContains(keys: OSCmd, in: modifiers) &&
-                key == kVK_ANSI_W
-            {
+            } else if modsContains(keys: OSCmd, in: modifiers) && key == kVK_ANSI_W {
                 resignKey()
                 return true
-
-            } else if modsContains(keys: OSCmd | OSShift,
-                in: modifiers) &&
-                key == kVK_ANSI_R
-            {
+            } else if modsContains(keys: OSCmd | OSShift, in: modifiers) && key == kVK_ANSI_R {
                 PathManager.shared.updateIndex()
                 return true
             } else if key == kVK_Escape {

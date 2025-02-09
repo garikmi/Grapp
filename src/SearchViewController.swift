@@ -44,7 +44,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
         effect.wantsLayer = true
         effect.layer?.masksToBounds = true
 
-        effect.layer?.borderColor = NSColor.labelColor.withAlphaComponent(0.1).cgColor
+        effect.layer?.borderColor = NSColor.labelColor.withAlphaComponent(0.2).cgColor
         effect.layer?.borderWidth = 1
         effect.layer?.cornerRadius = windowCornerRadius
 
@@ -292,8 +292,8 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
                     if prog.name.lowercased().contains(searchInput.stringValue.lowercased()) {
                         programsList[listIndex].path = prog.path
                         programsList[listIndex].name = prog.name
-                        programsList[listIndex].ext = prog.ext
-                        programsList[listIndex].img = NSWorkspace.shared.icon(forFile: URL(fileURLWithPath: prog.path).appendingPathComponent(prog.name+prog.ext).path)
+                        programsList[listIndex].ext  = prog.ext
+                        programsList[listIndex].img  = NSWorkspace.shared.icon(forFile: URL(fileURLWithPath: prog.path).appendingPathComponent(prog.name+prog.ext).path)
                         listIndex += 1
                     }
                 }
@@ -336,9 +336,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
         return listIndex
     }
 
-    func tableView(_ tableView: NSTableView,
-        rowViewForRow row: Int) -> NSTableRowView?
-    {
+    func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
         return ProgramsTableRowView()
     }
 

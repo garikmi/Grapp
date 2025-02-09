@@ -15,7 +15,7 @@ class ShadowView: NSView {
         guard let layer = layer else { return }
 
         let shadow = NSShadow()
-        shadow.shadowColor = NSColor.black.withAlphaComponent(0.4)
+        shadow.shadowColor = NSColor.shadowColor.withAlphaComponent(0.4)
         shadow.shadowBlurRadius = 20.0
         shadow.shadowOffset = CGSize(width: 0, height: -10)
         shadow.set()

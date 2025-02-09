@@ -9,14 +9,14 @@ fileprivate enum AboutLinks {
 }
 
 enum Strings {
-    static let copyright = "Copyright © 2024\nGarikMI. All rights reserved."
-    static let evaluationTitle = "License - Evaluation"
+    static let copyright         = "Copyright © 2024\nGarikMI. All rights reserved."
+    static let evaluationTitle   = "License - Evaluation"
     static let evaluationMessage = "You are currently using evaluation license. CmdBar will quit after 20 minutes. If you already own a license, enter it below or purchase a license."
-    static let activate = "Activate"
-    static let proTitle = "License - Activated"
-    static let proMessage = "Thank you for purchasing CmdBar! Enjoy!"
-    static let deactivate = "Deactivate"
-    static let activating = "Activating..."
+    static let activate          = "Activate"
+    static let proTitle          = "License - Activated"
+    static let proMessage        = "Thank you for purchasing CmdBar! Enjoy!"
+    static let deactivate        = "Deactivate"
+    static let activating        = "Activating..."
 }
 
 class AboutViewController: NSViewController, NSTextFieldDelegate {
