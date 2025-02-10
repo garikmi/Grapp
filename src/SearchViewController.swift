@@ -192,6 +192,16 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
                           modsContainsNone(in: modifiers) && key == kVK_DownArrow
                 {
                     controller.programsTableViewSelection += 1
+                } else if modsContains(keys: OSCmd, in: modifiers) && isNumericalCode(key) {
+                    if key == kVK_ANSI_1 { controller.programsTableViewSelection = 0 }
+                    if key == kVK_ANSI_2 { controller.programsTableViewSelection = 1 }
+                    if key == kVK_ANSI_3 { controller.programsTableViewSelection = 2 }
+                    if key == kVK_ANSI_4 { controller.programsTableViewSelection = 3 }
+                    if key == kVK_ANSI_5 { controller.programsTableViewSelection = 4 }
+                    if key == kVK_ANSI_6 { controller.programsTableViewSelection = 5 }
+                    if key == kVK_ANSI_7 { controller.programsTableViewSelection = 6 }
+                    if key == kVK_ANSI_8 { controller.programsTableViewSelection = 7 }
+                    if key == kVK_ANSI_9 { controller.programsTableViewSelection = 8 }
                 }
 
                 if controller.programsTableViewSelection > controller.listIndex-1 {

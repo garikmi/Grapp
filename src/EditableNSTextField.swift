@@ -34,6 +34,8 @@ final class EditableNSTextField: NSTextField {
                     if NSApp.sendAction(#selector(NSResponder.selectAll(_:)), to: nil, from: self) {
                         return true
                     }
+                } else if isNumericalCode(key) { // Ignore Command + {1-9}.
+                    return true
                 }
             } else if modsContains(keys: OSCmd | OSShift, in: modifiers) {
                 if key == kVK_ANSI_Z {

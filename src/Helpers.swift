@@ -11,6 +11,10 @@ func modsContains(keys: UInt, in modifiers: UInt) -> Bool {
     return (modifiers & keys) == keys && ((modifiers ^ keys) & OSMods) == 0
 }
 
+func isNumericalCode(_ key: UInt16) -> Bool {
+    return (key == kVK_ANSI_1 || key == kVK_ANSI_2 || key == kVK_ANSI_3 || key == kVK_ANSI_4 || key == kVK_ANSI_5 || key == kVK_ANSI_6 || key == kVK_ANSI_7 || key == kVK_ANSI_8 || key == kVK_ANSI_9)
+}
+
 func modsContainsNone(in modifiers: UInt) -> Bool {
     return (modifiers & OSMods) == 0
 }
