@@ -1,23 +1,17 @@
 import AppKit
 import Carbon
 
-// NOTE: This is the corner radius of the backgrounView view that acts as
-//       a window frame and an NSViewController's view that clips all
+// NOTE: This is the corner radius of the backgrounView view that acts as a window frame and an NSViewController's view that clips all
 //       elements inside of it.
 fileprivate let windowCornerRadius = 15.0
 
-struct ProgramWeighted {
-    let program: Program
-    let weight: Int
-}
-
-fileprivate let maxItems = 10
+fileprivate let maxItems = 20
 
 class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDelegate, NSTableViewDataSource, NSTableViewDelegate {
     private var keyboardEvents: EventMonitor?
 
     private var listIndex = 0
-    private var programsList: [Program] = Array(repeating: Program(), count: maxItems)
+    private var programsList: [Program] = []
     private var programsListCells: [ProgramsTableViewCell] = []
 
     private var programsTableViewSelection = 0
@@ -99,7 +93,8 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
     private var programsTableView: ProgramsTableView = {
         let table = ProgramsTableView()
 
-        table.style = NSTableView.Style.plain
+        table.style = .plain
+        table.intercellSpacing = NSSize.zero
         table.backgroundColor = .clear
         table.usesAutomaticRowHeights = true
 
@@ -166,15 +161,20 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // NOTE: This needs removeObserver on deinit?
+        // NOTE: This needs removeObserver on deinit? Well, technically we don't care because this view controller will exist throughout
+        //       the whole life of the program. When the program gets killed, the OS will clear this.
         DistributedNotificationCenter.default.addObserver(self, selector: #selector(osThemeChanged(sender:)), name: NSNotification.Name(rawValue: "AppleInterfaceThemeChangedNotification"), object: nil)
 
-        // Initialize an array of reusable cells.
-        for _ in 0..<maxItems {
-            programsListCells.append(ProgramsTableViewCell())
+        // Initialize an array of programs and reusable cells.
+        for i in 0..<maxItems {
+            programsList.append(Program())
+
+            let cell = ProgramsTableViewCell()
+            cell.indexLabel.stringValue = "\(i+1)"
+            programsListCells.append(cell)
         }
 
-        updateViewsBasedOnTheme()
+        updateViewsBasedOnOSTheme()
 
         view.wantsLayer = true
         view.layer?.backgroundColor = NSColor.clear.cgColor
@@ -192,6 +192,14 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
                           modsContainsNone(in: modifiers) && key == kVK_DownArrow
                 {
                     controller.programsTableViewSelection += 1
+                } else if modsContains(keys: OSCtrl | OSCmd, in: modifiers) && key == kVK_ANSI_P ||
+                          modsContains(keys: OSCmd, in: modifiers) && key == kVK_UpArrow
+                {
+                    controller.programsTableViewSelection = 0
+                } else if modsContains(keys: OSCtrl | OSCmd, in: modifiers) && key == kVK_ANSI_N ||
+                          modsContains(keys: OSCmd, in: modifiers) && key == kVK_DownArrow
+                {
+                    controller.programsTableViewSelection = controller.listIndex-1
                 } else if modsContains(keys: OSCmd, in: modifiers) && isNumericalCode(key) {
                     if key == kVK_ANSI_1 { controller.programsTableViewSelection = 0 }
                     if key == kVK_ANSI_2 { controller.programsTableViewSelection = 1 }
@@ -333,6 +341,9 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
         } else if commandSelector == #selector(NSResponder.moveUp(_:)) || commandSelector == #selector(NSResponder.moveDown(_:)) {
             // Ignore arrows up and down because we use those to navigate the programs list.
             return true
+        } else if commandSelector == #selector(NSResponder.moveToBeginningOfDocument(_:)) {
+            // Ignore command plus up and down arrows because we use those to move to the beginning and end of the list.
+            return true
         }
 
         return false
@@ -378,10 +389,10 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
     }
 
     @objc func osThemeChanged(sender: NSNotification) {
-        updateViewsBasedOnTheme()
+        updateViewsBasedOnOSTheme()
     }
 
-    @objc func updateViewsBasedOnTheme() {
+    @objc func updateViewsBasedOnOSTheme() {
         if NSApp.windows.first?.effectiveAppearance.bestMatch(from: [.darkAqua, .vibrantDark]) == .darkAqua { // dark
             backgroundView.layer?.borderColor = NSColor.white.withAlphaComponent(0.2).cgColor
         } else { // light

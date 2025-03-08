@@ -82,7 +82,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     public func fsEventTriggered(_ path: String, _ flags: Int) {
         if containsFlags(key: kFSEventStreamEventFlagItemCreated, in: flags) ||
            containsFlags(key: kFSEventStreamEventFlagItemRemoved, in: flags) ||
-           containsFlags(key: kFSEventStreamEventFlagItemCloned, in: flags)  ||
+           containsFlags(key: kFSEventStreamEventFlagItemCloned,  in: flags) ||
            containsFlags(key: kFSEventStreamEventFlagItemRenamed, in: flags)
         {
             for dir in PathManager.shared.paths {
