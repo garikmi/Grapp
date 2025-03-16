@@ -24,6 +24,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
                     window.resignKey()
                 } else {
                     window.makeKeyAndOrderFront(nil)
+                    if let controller = window.contentViewController as? SearchViewController {
+                        controller.centerWindow()
+                    }
                 }
             }
             return noErr
@@ -35,8 +38,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         {
             HotKeyManager.shared.registerHotKey(key: code, modifiers: mods)
         } else {
-            // NOTE: This is the default shortcut. If you want to change it, do not forget to change it in other files
-            //       (SettingsViewController).
+            // NOTE: This is the default shortcut. If you want to change it, do not forget to change it in other files (SettingsViewController).
             HotKeyManager.shared.registerHotKey(key: kVK_Space, modifiers: optionKey)
         }
     }

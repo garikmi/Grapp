@@ -1,8 +1,7 @@
 import AppKit
 import Carbon
 
-// NOTE: This is the corner radius of the backgrounView view that acts as a window frame and an NSViewController's view that clips all
-//       elements inside of it.
+// NOTE: This is the corner radius of the backgrounView view that acts as a window frame and an NSViewController's view that clips all elements inside of it.
 fileprivate let windowCornerRadius = 15.0
 
 fileprivate let maxItems = 20
@@ -163,7 +162,8 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
 
         // NOTE: This needs removeObserver on deinit? Well, technically we don't care because this view controller will exist throughout
         //       the whole life of the program. When the program gets killed, the OS will clear this.
-        DistributedNotificationCenter.default.addObserver(self, selector: #selector(osThemeChanged(sender:)), name: NSNotification.Name(rawValue: "AppleInterfaceThemeChangedNotification"), object: nil)
+        DistributedNotificationCenter.default.addObserver(self, selector: #selector(osThemeChanged(sender:)),
+                                                          name: NSNotification.Name(rawValue: "AppleInterfaceThemeChangedNotification"), object: nil)
 
         // Initialize an array of programs and reusable cells.
         for i in 0..<maxItems {
@@ -242,11 +242,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
 
         keyboardEvents?.start()
 
-        if let win = view.window, let scrn = NSScreen.main {
-            let x = (scrn.visibleFrame.size.width / 2) - (win.frame.size.width / 2)
-            let y = (scrn.visibleFrame.size.height * 0.9) - win.frame.size.height
-            view.window?.setFrameOrigin(NSPoint(x: x, y: y))
-        }
+        centerWindow()
 
         view.window?.makeFirstResponder(searchInput)
         // searchInput should select all text whenever window appears.
@@ -267,6 +263,14 @@ class SearchViewController: NSViewController, NSTextFieldDelegate, NSPopoverDele
 
     override func loadView() {
         self.view = NSView()
+    }
+
+    func centerWindow() {
+        if let win = view.window, let scrn = NSScreen.main {
+            let x = (scrn.visibleFrame.origin.x + scrn.visibleFrame.size.width / 2) - (win.frame.size.width / 2)
+            let y = (scrn.visibleFrame.origin.y + scrn.visibleFrame.size.height * 0.9) - win.frame.size.height
+            view.window?.setFrameOrigin(NSPoint(x: x, y: y))
+        }
     }
 
     private func reloadProgramsTableViewData() {

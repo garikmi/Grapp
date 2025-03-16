@@ -69,14 +69,13 @@ $(EXEC).app: $(EXEC)
 
 all: $(EXEC).app
 
-clear:
-	clear
-
 kill:
 	-pkill $(EXEC)
 
-run: clear kill all
-# 	@open $(EXEC).app
+open: kill all
+	open $(EXEC).app
+
+run: kill all
 	./$(EXEC)
 
 clean:
