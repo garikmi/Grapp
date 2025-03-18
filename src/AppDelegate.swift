@@ -15,7 +15,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         window.delegate = self
 
-        window.makeKeyAndOrderFront(nil)
+        // NOTE: Here we check wether the program was launched by the system. If it was not, then display the window.
+        if let event = NSAppleEventManager.shared().currentAppleEvent,
+           !(event.eventID == kAEOpenApplication && event.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem)
+        {
+            window.makeKeyAndOrderFront(nil)
+        }
 
         HotKeyManager.shared.handler = { (inHandlerCallRef, inEvent, inUserData) -> OSStatus in
             if let delegate = NSApplication.shared.delegate as? AppDelegate {
