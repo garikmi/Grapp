@@ -12,7 +12,9 @@ func modsContains(keys: UInt, in modifiers: UInt) -> Bool {
 }
 
 func isNumericalCode(_ key: UInt16) -> Bool {
-    return (key == kVK_ANSI_1 || key == kVK_ANSI_2 || key == kVK_ANSI_3 || key == kVK_ANSI_4 || key == kVK_ANSI_5 || key == kVK_ANSI_6 || key == kVK_ANSI_7 || key == kVK_ANSI_8 || key == kVK_ANSI_9)
+    return (key == kVK_ANSI_1 || key == kVK_ANSI_2 || key == kVK_ANSI_3 ||
+            key == kVK_ANSI_4 || key == kVK_ANSI_5 || key == kVK_ANSI_6 ||
+            key == kVK_ANSI_7 || key == kVK_ANSI_8 || key == kVK_ANSI_9)
 }
 
 func modsContainsNone(in modifiers: UInt) -> Bool {
@@ -46,8 +48,10 @@ func keyName(virtualKeyCode: UInt16) -> String? {
 
     //let source =
     //    TISCopyCurrentKeyboardLayoutInputSource().takeRetainedValue()
-    let source = TISCopyInputSourceForLanguage("en-US" as CFString).takeRetainedValue();
-    guard let ptr = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)
+    let source = TISCopyInputSourceForLanguage("en-US" as CFString)
+                     .takeRetainedValue();
+    guard let ptr =
+        TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)
     else {
         print("Could not get keyboard layout data")
         return nil
@@ -55,9 +59,11 @@ func keyName(virtualKeyCode: UInt16) -> String? {
     let layoutData = Unmanaged<CFData>.fromOpaque(ptr)
         .takeUnretainedValue() as Data
     let osStatus = layoutData.withUnsafeBytes {
-        UCKeyTranslate($0.bindMemory(to: UCKeyboardLayout.self).baseAddress, virtualKeyCode,
-                       UInt16(kUCKeyActionDown), modifierKeys, keyboardType, UInt32(kUCKeyTranslateNoDeadKeysMask),
-                       &deadKeys, maxNameLength, &nameLength, &nameBuffer)
+        UCKeyTranslate($0.bindMemory(to: UCKeyboardLayout.self).baseAddress,
+                       virtualKeyCode, UInt16(kUCKeyActionDown),
+                       modifierKeys, keyboardType,
+                       UInt32(kUCKeyTranslateNoDeadKeysMask), &deadKeys,
+                       maxNameLength, &nameLength, &nameBuffer)
     }
     guard osStatus == noErr else {
         print("Code: \(virtualKeyCode) Status: \(osStatus)")
@@ -78,16 +84,23 @@ func keyName(virtualKeyCode: UInt16) -> String? {
 
 func isDirectory(_ path: String) -> Bool {
     var isDirectory: ObjCBool = false
-    if FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory), isDirectory.boolValue {
+    if FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory),
+        isDirectory.boolValue
+    {
         return true
     } else {
         return false
     }
 }
 
-func systemImage(_ name: String, _ size: NSFont.TextStyle, _ scale: NSImage.SymbolScale, _ configuration: NSImage.SymbolConfiguration) -> NSImage? {
+func systemImage(_ name: String, _ size: NSFont.TextStyle,
+                 _ scale: NSImage.SymbolScale,
+                 _ configuration: NSImage.SymbolConfiguration) -> NSImage?
+{
     return NSImage(systemSymbolName: name, accessibilityDescription: nil)?
-        .withSymbolConfiguration(NSImage.SymbolConfiguration(textStyle: size, scale: scale).applying(configuration))
+        .withSymbolConfiguration(NSImage
+            .SymbolConfiguration(textStyle: size, scale: scale)
+                .applying(configuration))
 }
 
 extension String {

@@ -35,7 +35,8 @@ final class LocalEventMonitor: EventMonitor {
     }
 
     override func start() {
-        monitor = NSEvent.addLocalMonitorForEvents(matching: mask, handler: handler)
+        monitor = NSEvent.addLocalMonitorForEvents(matching: mask,
+                                                   handler: handler)
     }
 }
 
@@ -50,6 +51,7 @@ final class GlobalEventMonitor: EventMonitor {
     }
 
     override func start() {
-        monitor = NSEvent.addGlobalMonitorForEvents(matching: mask, handler: handler)
+        monitor = NSEvent.addGlobalMonitorForEvents(matching: mask,
+                                                    handler: handler)
     }
 }

@@ -29,7 +29,10 @@ final class PathManager {
 
     private init() {
         // UserDefaults.standard.removeObject(forKey: "programPaths")
-        if let dirs = UserDefaults.standard.stringArray(forKey: "programPaths"), !dirs.isEmpty {
+        if let dirs =
+                UserDefaults.standard.stringArray(forKey: "programPaths"),
+                                                  !dirs.isEmpty
+        {
             for dir in dirs {
                 addPath(dir)
             }
@@ -79,7 +82,9 @@ final class PathManager {
             buf.append(path.key)
         }
 
-        dirMonitor = DirMonitor(paths: buf, queue: DispatchQueue.global(qos: .userInitiated))
+        dirMonitor =
+            DirMonitor(paths: buf,
+                       queue: DispatchQueue.global(qos: .userInitiated))
         // _ = dirMonitor!.start()
         if dirMonitor!.start() {
             print("Started monitoring directories.")
@@ -115,10 +120,12 @@ final class PathManager {
                 let name = String(item.dropLast(4))
 
                 if item.hasSuffix(".app"), !contains(name) {
-                    array.append(Program(path: path, name: name, ext: ".app", img: nil))
+                    array.append(Program(path: path, name: name,
+                                         ext: ".app", img: nil))
                 }
                 if deepness > 0 {
-                    array += indexDirs(at: path + "/" + item, deepness: deepness-1)
+                    array += indexDirs(at: path + "/" + item,
+                                       deepness: deepness-1)
                 }
             }
         } catch { print("Error: \(error.localizedDescription)") }

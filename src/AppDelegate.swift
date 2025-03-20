@@ -15,21 +15,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         window.delegate = self
 
-        // NOTE: Here we check wether the program was launched by the system. If it was not, then display the window.
+        // NOTE: Here we check wether the program was launched by the
+        //       system. If it was not, then display the window.
         if let event = NSAppleEventManager.shared().currentAppleEvent,
-           !(event.eventID == kAEOpenApplication && event.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem)
+           !(event.eventID == kAEOpenApplication &&
+                event.paramDescriptor(forKeyword: keyAEPropData)?
+                    .enumCodeValue == keyAELaunchedAsLogInItem)
         {
             window.makeKeyAndOrderFront(nil)
         }
 
-        HotKeyManager.shared.handler = { (inHandlerCallRef, inEvent, inUserData) -> OSStatus in
-            if let delegate = NSApplication.shared.delegate as? AppDelegate {
+        HotKeyManager.shared.handler =
+        { (inHandlerCallRef, inEvent, inUserData) -> OSStatus in
+            if let delegate = NSApplication.shared.delegate as? AppDelegate
+            {
                 let window = delegate.window
                 if window.isKeyWindow {
                     window.resignKey()
                 } else {
                     window.makeKeyAndOrderFront(nil)
-                    if let controller = window.contentViewController as? SearchViewController {
+                    if let controller =
+                        window.contentViewController as? SearchViewController
+                    {
                         controller.centerWindow()
                     }
                 }
@@ -38,13 +45,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
 
         HotKeyManager.shared.enable()
-        if let code = UserDefaults.standard.object(forKey: "keyCode") as? Int,
-           let mods = UserDefaults.standard.object(forKey: "keyModifiers") as? Int
+        if let code =
+                UserDefaults.standard.object(forKey: "keyCode") as? Int,
+           let mods =
+                UserDefaults.standard.object(forKey: "keyModifiers") as? Int
         {
             HotKeyManager.shared.registerHotKey(key: code, modifiers: mods)
         } else {
-            // NOTE: This is the default shortcut. If you want to change it, do not forget to change it in other files (SettingsViewController).
-            HotKeyManager.shared.registerHotKey(key: kVK_Space, modifiers: optionKey)
+            // NOTE: This is the default shortcut. If you want to change
+            //       it, do not forget to change it in other files
+            //       (SettingsViewController).
+            HotKeyManager.shared.registerHotKey(key: kVK_Space,
+                                                modifiers: optionKey)
         }
     }
 
@@ -54,7 +66,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
-    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+    func applicationShouldHandleReopen(_ sender: NSApplication,
+                                       hasVisibleWindows: Bool) -> Bool {
         if !window.isKeyWindow {
             window.makeKeyAndOrderFront(nil)
         }
@@ -85,7 +98,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         aboutWindow.makeKeyAndOrderFront(nil)
     }
 
-    // NOTE: This function act like a callback is triggered by DirMonitor when file system events occur.
+    // NOTE: This function act like a callback is triggered by DirMonitor
+    //       when file system events occur.
     public func fsEventTriggered(_ path: String, _ flags: Int) {
         if containsFlags(key: kFSEventStreamEventFlagItemCreated, in: flags) ||
            containsFlags(key: kFSEventStreamEventFlagItemRemoved, in: flags) ||

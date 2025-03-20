@@ -3,8 +3,9 @@ import Carbon
 import ServiceManagement
 
 class SettingsViewController: NSViewController,
-                              NSTextFieldDelegate, KeyDetectorButtonDelegate, NSTableViewDataSource,
-                              NSTableViewDelegate, PathsTableCellViewDelegate
+                              NSTextFieldDelegate, KeyDetectorButtonDelegate,
+                              NSTableViewDataSource, NSTableViewDelegate,
+                              PathsTableCellViewDelegate
 {
     private var recording = false
 
@@ -15,8 +16,10 @@ class SettingsViewController: NSViewController,
 
     private var paths: [String] = []
 
-    // PERF: This is very slow to initialize because it creates a new process. This also cannot be done on a separate
-    //       thread. This sucks because the program now takes considerably longer to launch.
+    // PERF: This is very slow to initialize because it creates a new
+    //       process. This also cannot be done on a separate thread. This
+    //       sucks because the program now takes considerably longer to
+    //       launch.
     private let dirPicker: NSOpenPanel = {
         let panel = NSOpenPanel()
         panel.message = "Select a directory to search applications in . . ."
@@ -28,14 +31,18 @@ class SettingsViewController: NSViewController,
 
     private var shortcutsLabel: NSTextField = {
         let textField = NSTextField(labelWithString: "Shortcut")
-        textField.font = NSFont.systemFont(ofSize: NSFontDescriptor.preferredFontDescriptor(forTextStyle: .title2).pointSize, weight: .bold)
+        textField.font =
+            NSFont.systemFont(ofSize: NSFontDescriptor
+                .preferredFontDescriptor(forTextStyle: .title2).pointSize,
+                                         weight: .bold)
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
 
     private var aboutButton: NSButton = {
         let button = NSButton()
-        button.image = systemImage("info.circle.fill", .title2, .large, .init(paletteColors: [.white, .systemGray]))
+        button.image = systemImage("info.circle.fill", .title2, .large,
+                               .init(paletteColors: [.white, .systemGray]))
         button.isBordered = false
         button.action = #selector(showAbout)
         button.sizeToFit()
@@ -95,7 +102,10 @@ class SettingsViewController: NSViewController,
         textField.isBezeled = false
         textField.drawsBackground = false
         textField.alignment = .center
-        textField.font = NSFont.systemFont(ofSize: NSFontDescriptor.preferredFontDescriptor(forTextStyle: .body).pointSize, weight: .bold)
+        textField.font = NSFont
+            .systemFont(ofSize: NSFontDescriptor
+                .preferredFontDescriptor(forTextStyle: .body).pointSize,
+                                         weight: .bold)
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
@@ -110,8 +120,12 @@ class SettingsViewController: NSViewController,
     }()
 
     private var pathsLabel: NSTextField = {
-        let textField = NSTextField(labelWithString: "Application Directories")
-        textField.font = NSFont.systemFont(ofSize: NSFontDescriptor.preferredFontDescriptor(forTextStyle: .title2).pointSize, weight: .bold)
+        let textField =
+            NSTextField(labelWithString: "Application Directories")
+        textField.font = NSFont
+            .systemFont(ofSize: NSFontDescriptor
+                .preferredFontDescriptor(forTextStyle: .title2).pointSize,
+                                         weight: .bold)
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
@@ -135,7 +149,11 @@ class SettingsViewController: NSViewController,
         table.allowsColumnReordering = false
         table.allowsColumnResizing = false
         table.allowsColumnSelection = false
-        table.addTableColumn(NSTableColumn(identifier: NSUserInterfaceItemIdentifier("Paths")))
+        table.addTableColumn(
+            NSTableColumn(
+                identifier: NSUserInterfaceItemIdentifier("Paths")
+            )
+        )
 
         table.translatesAutoresizingMaskIntoConstraints = false
         return table
@@ -146,8 +164,10 @@ class SettingsViewController: NSViewController,
         control.segmentCount = 2
         control.segmentStyle = .roundRect
 
-        control.setImage(NSImage(systemSymbolName: "plus", accessibilityDescription: nil), forSegment: 0)
-        control.setImage(NSImage(systemSymbolName: "minus", accessibilityDescription: nil), forSegment: 1)
+        control.setImage(NSImage(systemSymbolName: "plus",
+                         accessibilityDescription: nil), forSegment: 0)
+        control.setImage(NSImage(systemSymbolName: "minus",
+                         accessibilityDescription: nil), forSegment: 1)
 
         control.setToolTip("Add Path", forSegment: 0)
         control.setToolTip("Remove Path", forSegment: 1)
@@ -212,52 +232,99 @@ class SettingsViewController: NSViewController,
 
     private func setConstraints() {
         NSLayoutConstraint.activate([
-            shortcutsLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: ViewConstants.spacing10),
-            shortcutsLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: ViewConstants.spacing10),
+            shortcutsLabel.topAnchor
+                .constraint(equalTo: view.topAnchor,
+                            constant: ViewConstants.spacing10),
+            shortcutsLabel.leadingAnchor
+                .constraint(equalTo: view.leadingAnchor,
+                            constant: ViewConstants.spacing10),
 
-            aboutButton.firstBaselineAnchor.constraint(equalTo: shortcutsLabel.firstBaselineAnchor),
-            aboutButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -ViewConstants.spacing10),
+            aboutButton.firstBaselineAnchor
+                .constraint(equalTo: shortcutsLabel.firstBaselineAnchor),
+            aboutButton.trailingAnchor
+                .constraint(equalTo: view.trailingAnchor,
+                            constant: -ViewConstants.spacing10),
 
-            ctrlButton.topAnchor.constraint(equalTo: shortcutsLabel.bottomAnchor, constant: ViewConstants.spacing10),
-            ctrlButton.leadingAnchor.constraint(equalTo: shortcutsLabel.leadingAnchor),
+            ctrlButton.topAnchor
+                .constraint(equalTo: shortcutsLabel.bottomAnchor,
+                            constant: ViewConstants.spacing10),
+            ctrlButton.leadingAnchor
+                .constraint(equalTo: shortcutsLabel.leadingAnchor),
 
-            cmdButton.centerYAnchor.constraint(equalTo: ctrlButton.centerYAnchor),
-            cmdButton.leadingAnchor.constraint(equalTo: ctrlButton.trailingAnchor, constant: ViewConstants.spacing5),
+            cmdButton.centerYAnchor
+                .constraint(equalTo: ctrlButton.centerYAnchor),
+            cmdButton.leadingAnchor
+                .constraint(equalTo: ctrlButton.trailingAnchor,
+                            constant: ViewConstants.spacing5),
 
-            optButton.centerYAnchor.constraint(equalTo: ctrlButton.centerYAnchor),
-            optButton.leadingAnchor.constraint(equalTo: cmdButton.trailingAnchor, constant: ViewConstants.spacing5),
+            optButton.centerYAnchor
+                .constraint(equalTo: ctrlButton.centerYAnchor),
+            optButton.leadingAnchor
+                .constraint(equalTo: cmdButton.trailingAnchor,
+                            constant: ViewConstants.spacing5),
 
-            shiftButton.centerYAnchor.constraint(equalTo: ctrlButton.centerYAnchor),
-            shiftButton.leadingAnchor.constraint(equalTo: optButton.trailingAnchor, constant: ViewConstants.spacing5),
+            shiftButton.centerYAnchor
+                .constraint(equalTo: ctrlButton.centerYAnchor),
+            shiftButton.leadingAnchor
+                .constraint(equalTo: optButton.trailingAnchor,
+                            constant: ViewConstants.spacing5),
 
-            plusLabel.centerYAnchor.constraint(equalTo: ctrlButton.centerYAnchor),
-            plusLabel.leadingAnchor.constraint(equalTo: shiftButton.trailingAnchor, constant: ViewConstants.spacing5),
+            plusLabel.centerYAnchor
+                .constraint(equalTo: ctrlButton.centerYAnchor),
+            plusLabel.leadingAnchor
+                .constraint(equalTo: shiftButton.trailingAnchor,
+                            constant: ViewConstants.spacing5),
 
             recordButton.widthAnchor.constraint(equalToConstant: 40),
-            recordButton.centerYAnchor.constraint(equalTo: ctrlButton.centerYAnchor),
-            recordButton.leadingAnchor.constraint(equalTo: plusLabel.trailingAnchor, constant: ViewConstants.spacing5),
+            recordButton.centerYAnchor
+                .constraint(equalTo: ctrlButton.centerYAnchor),
+            recordButton.leadingAnchor
+                .constraint(equalTo: plusLabel.trailingAnchor,
+                            constant: ViewConstants.spacing5),
 
-            pathsLabel.topAnchor.constraint(equalTo: ctrlButton.bottomAnchor, constant: ViewConstants.spacing20),
-            pathsLabel.leadingAnchor.constraint(equalTo: shortcutsLabel.leadingAnchor),
+            pathsLabel.topAnchor
+                .constraint(equalTo: ctrlButton.bottomAnchor,
+                            constant: ViewConstants.spacing20),
+            pathsLabel.leadingAnchor
+                .constraint(equalTo: shortcutsLabel.leadingAnchor),
 
             tableScrollView.widthAnchor.constraint(equalToConstant: 350),
             tableScrollView.heightAnchor.constraint(equalToConstant: 150),
-            tableScrollView.topAnchor.constraint(equalTo: pathsLabel.bottomAnchor),
-            tableScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableScrollView.topAnchor
+                .constraint(equalTo: pathsLabel.bottomAnchor),
+            tableScrollView.leadingAnchor
+                .constraint(equalTo: view.leadingAnchor),
+            tableScrollView.trailingAnchor
+                .constraint(equalTo: view.trailingAnchor),
 
-            pathsControl.topAnchor.constraint(equalTo: tableScrollView.bottomAnchor, constant: ViewConstants.spacing10),
-            pathsControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: ViewConstants.spacing10),
+            pathsControl.topAnchor
+                .constraint(equalTo: tableScrollView.bottomAnchor,
+                            constant: ViewConstants.spacing10),
+            pathsControl.leadingAnchor
+                .constraint(equalTo: view.leadingAnchor,
+                            constant: ViewConstants.spacing10),
 
-            launchAtLoginLabel.topAnchor.constraint(equalTo: pathsControl.bottomAnchor, constant: ViewConstants.spacing10),
-            launchAtLoginLabel.trailingAnchor.constraint(equalTo: launchAtLoginToggle.leadingAnchor, constant: -ViewConstants.spacing10),
+            launchAtLoginLabel.topAnchor
+                .constraint(equalTo: pathsControl.bottomAnchor,
+                            constant: ViewConstants.spacing10),
+            launchAtLoginLabel.trailingAnchor
+                .constraint(equalTo: launchAtLoginToggle.leadingAnchor,
+                            constant: -ViewConstants.spacing10),
 
-            launchAtLoginToggle.firstBaselineAnchor.constraint(equalTo: launchAtLoginLabel.firstBaselineAnchor),
-            launchAtLoginToggle.trailingAnchor.constraint(equalTo: resetAllButton.leadingAnchor, constant: -ViewConstants.spacing15),
+            launchAtLoginToggle.firstBaselineAnchor
+                .constraint(equalTo: launchAtLoginLabel.firstBaselineAnchor),
+            launchAtLoginToggle.trailingAnchor
+                .constraint(equalTo: resetAllButton.leadingAnchor,
+                            constant: -ViewConstants.spacing15),
 
-            resetAllButton.firstBaselineAnchor.constraint(equalTo: launchAtLoginLabel.firstBaselineAnchor),
-            resetAllButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -ViewConstants.spacing10),
-            resetAllButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -ViewConstants.spacing10),
+            resetAllButton.firstBaselineAnchor
+                .constraint(equalTo: launchAtLoginLabel.firstBaselineAnchor),
+            resetAllButton.trailingAnchor
+                .constraint(equalTo: view.trailingAnchor,
+                            constant: -ViewConstants.spacing10),
+            resetAllButton.bottomAnchor
+                .constraint(equalTo: view.bottomAnchor,
+                            constant: -ViewConstants.spacing10),
         ])
     }
 
@@ -298,10 +365,14 @@ class SettingsViewController: NSViewController,
         super.viewWillAppear()
 
         // Fetch the saved key codes and modifiers.
-        if let code = UserDefaults.standard.object(forKey: "keyCode") as? Int {
+        if let code =
+                UserDefaults.standard.object(forKey: "keyCode") as? Int
+        {
             keyCode = code
         }
-        if let mods = UserDefaults.standard.object(forKey: "keyModifiers") as? Int {
+        if let mods =
+            UserDefaults.standard.object(forKey: "keyModifiers") as? Int
+        {
             modifiers = mods
         }
 
@@ -317,7 +388,8 @@ class SettingsViewController: NSViewController,
     override func viewWillDisappear() {
         super.viewWillDisappear()
 
-        HotKeyManager.shared.registerHotKey(key: keyCode, modifiers: modifiers)
+        HotKeyManager.shared.registerHotKey(key: keyCode,
+                                            modifiers: modifiers)
 
         UserDefaults.standard.set(keyCode, forKey: "keyCode")
         UserDefaults.standard.set(modifiers, forKey: "keyModifiers")
@@ -377,7 +449,8 @@ class SettingsViewController: NSViewController,
     private func reset() {
         keyCode   = Int(kVK_Space)
         modifiers = Int(optionKey)
-        HotKeyManager.shared.registerHotKey(key: keyCode, modifiers: modifiers)
+        HotKeyManager.shared.registerHotKey(key: keyCode,
+                                            modifiers: modifiers)
         UserDefaults.standard.set(keyCode, forKey: "keyCode")
         UserDefaults.standard.set(modifiers, forKey: "keyModifiers")
         syncModifierButtons()
@@ -449,11 +522,16 @@ class SettingsViewController: NSViewController,
         case 0:
             let row = paths.count
             paths.append("")
-            pathsTableView.insertRows(at: IndexSet(integer: row), withAnimation: [])
+            pathsTableView.insertRows(at: IndexSet(integer: row),
+                                      withAnimation: [])
 
             pathsTableView.scrollRowToVisible(row)
-            pathsTableView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
-            (pathsTableView.view(atColumn: 0, row: row, makeIfNecessary: false) as? PathsTableCellView)?.startEditing()
+            pathsTableView.selectRowIndexes(IndexSet(integer: row),
+                                            byExtendingSelection: false)
+            (
+                pathsTableView
+                    .view(atColumn: 0, row: row, makeIfNecessary: false
+            ) as? PathsTableCellView)?.startEditing()
             break
         case 1:
             if pathsTableView.selectedRow > -1 {
@@ -484,9 +562,16 @@ class SettingsViewController: NSViewController,
     @objc
     private func editItem(_ sender: NSTableView) {
         pathsTableView.deselectAll(nil)
-        pathsTableView.selectRowIndexes(IndexSet(integer: pathsTableView.clickedRow), byExtendingSelection: false)
+        pathsTableView.selectRowIndexes(
+            IndexSet(integer: pathsTableView.clickedRow),
+            byExtendingSelection: false
+        )
 
-        if let cell = pathsTableView.view(atColumn: 0, row: pathsTableView.clickedRow, makeIfNecessary: false) as? PathsTableCellView {
+        if let cell = pathsTableView.view(atColumn: 0,
+                                          row: pathsTableView.clickedRow,
+                                          makeIfNecessary: false) as?
+                                          PathsTableCellView
+        {
             cell.startEditing()
         }
     }
@@ -521,7 +606,9 @@ class SettingsViewController: NSViewController,
 
         delegate.window.level = .statusBar
         delegate.window.makeKeyAndOrderFront(nil)
-        if let controller = delegate.window.contentViewController as?  SearchViewController {
+        if let controller =
+            delegate.window.contentViewController as? SearchViewController
+        {
             controller.openSettings()
         }
     }
@@ -533,7 +620,8 @@ class SettingsViewController: NSViewController,
     func tableView(_ tableView: NSTableView,
         viewFor tableColumn: NSTableColumn?, row: Int) -> NSView?
     {
-        let rect = NSRect(x: 0, y: 0, width: tableColumn!.width, height: 20)
+        let rect = NSRect(x: 0, y: 0, width: tableColumn!.width,
+                                      height: 20)
         let cell = PathsTableCellView(frame: rect)
         cell.titleField.stringValue = paths[row]
         cell.delegate = self

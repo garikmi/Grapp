@@ -4,12 +4,15 @@ import OSLog
 final class HotKeyManager {
     static let shared = HotKeyManager()
 
-    private var eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
+    private var eventType =
+        EventTypeSpec(eventClass: OSType(kEventClassKeyboard),
+                      eventKind: UInt32(kEventHotKeyPressed))
     private var eventHandlerRef: EventHandlerRef?
     public var handler: EventHandlerUPP?
 
     private var hotKeyRef: EventHotKeyRef?
-    private let hotKeyID: EventHotKeyID = EventHotKeyID(signature: OSType("grap".fourCharCodeValue), id: 1)
+    private let hotKeyID: EventHotKeyID =
+        EventHotKeyID(signature: OSType("grap".fourCharCodeValue), id: 1)
 
     private init() {}
     deinit {}
@@ -20,7 +23,8 @@ final class HotKeyManager {
             disable()
         }
 
-        let err = InstallEventHandler(GetApplicationEventTarget(), handler, 1, &eventType, nil, &eventHandlerRef)
+        let err = InstallEventHandler(GetApplicationEventTarget(), handler,
+                                      1, &eventType, nil, &eventHandlerRef)
         if err == noErr {
             print("Installed event handler.")
         } else {
@@ -32,7 +36,8 @@ final class HotKeyManager {
         guard eventHandlerRef != nil else { return }
         let err = RemoveEventHandler(eventHandlerRef)
         if err == noErr {
-            eventHandlerRef = nil // WARNING: Does it remove no matter what on error?
+            // WARNING: Does it remove no matter what on error?
+            eventHandlerRef = nil
             print("Removed event handler.")
         } else {
             print("Failed to remove event handler.")
@@ -46,7 +51,10 @@ final class HotKeyManager {
             unregisterHotKey()
         }
 
-        let err = RegisterEventHotKey(UInt32(key), UInt32(modifiers), hotKeyID, GetApplicationEventTarget(), UInt32(kEventHotKeyNoOptions), &hotKeyRef)
+        let err = RegisterEventHotKey(UInt32(key), UInt32(modifiers),
+                                      hotKeyID, GetApplicationEventTarget(),
+                                      UInt32(kEventHotKeyNoOptions),
+                                      &hotKeyRef)
         if err == noErr {
             print("Registered hot key.")
         } else {
@@ -59,7 +67,8 @@ final class HotKeyManager {
         guard hotKeyRef != nil else { return }
         let err = UnregisterEventHotKey(hotKeyRef)
         if err == noErr {
-            hotKeyRef = nil // WARNING: Does it unregister no matter what on error?
+            // WARNING: Does it unregister no matter what on error?
+            hotKeyRef = nil
             print("Successfully unregistered hot key.")
         } else {
             print("Failed to unregistered hot key.")

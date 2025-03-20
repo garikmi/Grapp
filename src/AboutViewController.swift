@@ -9,21 +9,22 @@ fileprivate enum AboutLinks {
 }
 
 enum Strings {
-    static let copyright         = "Copyright © 2024\nGarikMI. All rights reserved."
-    static let evaluationTitle   = "License - Evaluation"
+    static let copyright = "Copyright © 2024\nGarikMI. All rights reserved."
+    static let evaluationTitle = "License - Evaluation"
     static let evaluationMessage = "You are currently using evaluation license. CmdBar will quit after 20 minutes. If you already own a license, enter it below or purchase a license."
-    static let activate          = "Activate"
-    static let proTitle          = "License - Activated"
-    static let proMessage        = "Thank you for purchasing CmdBar! Enjoy!"
-    static let deactivate        = "Deactivate"
-    static let activating        = "Activating..."
+    static let activate = "Activate"
+    static let proTitle = "License - Activated"
+    static let proMessage = "Thank you for purchasing CmdBar! Enjoy!"
+    static let deactivate = "Deactivate"
+    static let activating = "Activating..."
 }
 
 class AboutViewController: NSViewController, NSTextFieldDelegate {
     private var appIconImage: NSImageView = {
         //let image = NSImageView(image: NSApp.applicationIconImage)
         let image = NSImageView()
-        image.image = NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
+        image.image =
+            NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
         image.imageScaling = .scaleAxesIndependently
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
@@ -31,25 +32,35 @@ class AboutViewController: NSViewController, NSTextFieldDelegate {
 
     private var appNameLabel: NSTextField = {
         let textField = NSTextField()
-        textField.stringValue = (Bundle.main.infoDictionary?["CFBundleName"] as? String) ?? "NOT FOUND"
+        textField.stringValue =
+            (Bundle.main.infoDictionary?["CFBundleName"] as? String)
+            ??
+            "NOT FOUND"
         textField.isEditable = false
         textField.isBezeled = false
         textField.drawsBackground = false
         textField.alignment = .center
-        textField.font = NSFont.systemFont(ofSize: NSFontDescriptor .preferredFontDescriptor(forTextStyle: .title1).pointSize, weight: .bold)
+        textField.font =
+            NSFont.systemFont(ofSize: NSFontDescriptor
+                .preferredFontDescriptor(forTextStyle: .title1).pointSize,
+                                         weight: .bold)
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
 
     private var versionLabel: NSTextField = {
         let textField = NSTextField()
-        textField.stringValue = "Version \((Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "-.--")"
+        textField.stringValue =
+            "Version \((Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "-.--")"
         textField.isEditable = false
         textField.isBezeled = false
         textField.drawsBackground = false
         textField.alignment = .center
         textField.textColor = NSColor.systemGray
-        textField.font = NSFont.systemFont(ofSize: NSFontDescriptor.preferredFontDescriptor(forTextStyle: .subheadline).pointSize, weight: .regular)
+        textField.font =
+            NSFont.systemFont(ofSize: NSFontDescriptor
+                .preferredFontDescriptor(forTextStyle: .subheadline).pointSize,
+                                         weight: .regular)
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
@@ -64,7 +75,10 @@ class AboutViewController: NSViewController, NSTextFieldDelegate {
         textField.drawsBackground = false
         textField.alignment = .center
         textField.textColor = NSColor.systemGray
-        textField.font = NSFont.systemFont(ofSize: NSFontDescriptor.preferredFontDescriptor(forTextStyle: .subheadline).pointSize, weight: .regular)
+        textField.font =
+            NSFont.systemFont(ofSize: NSFontDescriptor
+                .preferredFontDescriptor(forTextStyle: .subheadline).pointSize,
+                                         weight: .regular)
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
@@ -152,44 +166,77 @@ class AboutViewController: NSViewController, NSTextFieldDelegate {
         // App image.
         NSLayoutConstraint.activate([
             appIconImage.widthAnchor.constraint(equalToConstant: 100),
-            appIconImage.heightAnchor.constraint(equalTo: appIconImage.widthAnchor, multiplier: 1),
-            appIconImage.topAnchor.constraint(equalTo: view.topAnchor, constant: ViewConstants.spacing20),
-            appIconImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            appIconImage.heightAnchor
+                .constraint(equalTo: appIconImage.widthAnchor,
+                            multiplier: 1),
+            appIconImage.topAnchor
+                .constraint(equalTo: view.topAnchor,
+                            constant: ViewConstants.spacing20),
+            appIconImage.centerXAnchor
+                .constraint(equalTo: view.centerXAnchor),
         ])
 
         // Title
         NSLayoutConstraint.activate([
-            appNameLabel.topAnchor.constraint(equalTo: appIconImage.bottomAnchor, constant: ViewConstants.spacing20),
-            appNameLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            appNameLabel.topAnchor
+                .constraint(equalTo: appIconImage.bottomAnchor,
+                            constant: ViewConstants.spacing20),
+            appNameLabel.centerXAnchor
+                .constraint(equalTo: view.centerXAnchor),
 
-            versionLabel.topAnchor.constraint(equalTo: appNameLabel.bottomAnchor, constant: ViewConstants.spacing2),
-            versionLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            versionLabel.topAnchor
+                .constraint(equalTo: appNameLabel.bottomAnchor,
+                            constant: ViewConstants.spacing2),
+            versionLabel.centerXAnchor
+                .constraint(equalTo: view.centerXAnchor),
 
-            copyrightLabel.topAnchor.constraint(equalTo: versionLabel.bottomAnchor, constant: ViewConstants.spacing10),
-            copyrightLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            copyrightLabel.topAnchor
+                .constraint(equalTo: versionLabel.bottomAnchor,
+                            constant: ViewConstants.spacing10),
+            copyrightLabel.centerXAnchor
+                .constraint(equalTo: view.centerXAnchor),
         ])
 
         // Buttons
         NSLayoutConstraint.activate([
-            buttonsContainer.topAnchor .constraint(equalTo: copyrightLabel.bottomAnchor, constant: ViewConstants.spacing20),
-            buttonsContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -ViewConstants.spacing20),
-            buttonsContainer.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            buttonsContainer.topAnchor
+                .constraint(equalTo: copyrightLabel.bottomAnchor,
+                            constant: ViewConstants.spacing20),
+            buttonsContainer.bottomAnchor
+                .constraint(equalTo: view.bottomAnchor,
+                            constant: -ViewConstants.spacing20),
+            buttonsContainer.centerXAnchor
+                .constraint(equalTo: view.centerXAnchor),
 
-            authorButton.topAnchor.constraint(equalTo: buttonsContainer.topAnchor),
-            authorButton.bottomAnchor.constraint(equalTo: buttonsContainer.bottomAnchor),
-            authorButton.leadingAnchor.constraint(equalTo: buttonsContainer.leadingAnchor),
-            authorButton.trailingAnchor.constraint(equalTo: buttonsContainer.trailingAnchor),
+            authorButton.topAnchor
+                .constraint(equalTo: buttonsContainer.topAnchor),
+            authorButton.bottomAnchor
+                .constraint(equalTo: buttonsContainer.bottomAnchor),
+            authorButton.leadingAnchor
+                .constraint(equalTo: buttonsContainer.leadingAnchor),
+            authorButton.trailingAnchor
+                .constraint(equalTo: buttonsContainer.trailingAnchor),
 
-            // privacyButton.topAnchor.constraint(equalTo: buttonsContainer.topAnchor),
-            // privacyButton.bottomAnchor.constraint(equalTo: buttonsContainer.bottomAnchor),
-            // privacyButton.leadingAnchor.constraint(equalTo: buttonsContainer.leadingAnchor),
+            // privacyButton.topAnchor
+            //     .constraint(equalTo: buttonsContainer.topAnchor),
+            // privacyButton.bottomAnchor
+            //     .constraint(equalTo: buttonsContainer.bottomAnchor),
+            // privacyButton.leadingAnchor
+            //     .constraint(equalTo: buttonsContainer.leadingAnchor),
             //
-            // documentationButton.firstBaselineAnchor.constraint(equalTo: privacyButton.firstBaselineAnchor),
-            // documentationButton.leadingAnchor.constraint(equalTo: privacyButton.trailingAnchor,constant: ViewConstants.spacing10),
+            // documentationButton.firstBaselineAnchor
+            //     .constraint(equalTo: privacyButton.firstBaselineAnchor),
+            // documentationButton.leadingAnchor
+            //     .constraint(equalTo: privacyButton.trailingAnchor,
+            //                 constant: ViewConstants.spacing10),
             //
-            // websiteButton.firstBaselineAnchor.constraint(equalTo: privacyButton.firstBaselineAnchor),
-            // websiteButton.leadingAnchor.constraint(equalTo: documentationButton.trailingAnchor,constant: ViewConstants.spacing10),
-            // websiteButton.trailingAnchor.constraint(equalTo: buttonsContainer.trailingAnchor),
+            // websiteButton.firstBaselineAnchor
+            //     .constraint(equalTo: privacyButton.firstBaselineAnchor),
+            // websiteButton.leadingAnchor
+            //     .constraint(equalTo: documentationButton.trailingAnchor,
+            //                 constant: ViewConstants.spacing10),
+            // websiteButton.trailingAnchor
+            //     .constraint(equalTo: buttonsContainer.trailingAnchor),
         ])
     }
 

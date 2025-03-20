@@ -7,7 +7,8 @@ final class ProgramsTableView: NSTableView {
 class ProgramsTableRowView: NSTableRowView {
     override func drawSelection(in dirtyRect: NSRect) {
         if self.selectionHighlightStyle != .none {
-            let selectionColor = NSColor.controlAccentColor.withAlphaComponent(0.8)
+            let selectionColor =
+                NSColor.controlAccentColor.withAlphaComponent(0.8)
             selectionColor.setFill()
             self.bounds.fill()
         }
@@ -28,7 +29,10 @@ class ProgramsTableViewCell: NSTableCellView {
 
         field.textColor = NSColor.secondaryLabelColor
         field.cell?.lineBreakMode = .byTruncatingTail
-        field.font = NSFont.systemFont(ofSize: NSFontDescriptor.preferredFontDescriptor(forTextStyle: .caption1).pointSize, weight: .bold)
+        field.font = NSFont
+            .systemFont(ofSize: NSFontDescriptor
+                .preferredFontDescriptor(forTextStyle: .caption1).pointSize,
+                                         weight: .bold)
         field.translatesAutoresizingMaskIntoConstraints = false
         return field
     }()
@@ -36,7 +40,8 @@ class ProgramsTableViewCell: NSTableCellView {
 
     public var appIconImage: NSImageView = {
         let image = NSImageView()
-        image.image = NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
+        image.image =
+            NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
         image.imageScaling = .scaleAxesIndependently
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
@@ -57,7 +62,10 @@ class ProgramsTableViewCell: NSTableCellView {
         field.isBordered = false
         field.drawsBackground = false
         field.lineBreakMode = .byTruncatingTail
-        field.font = NSFont.systemFont(ofSize: NSFontDescriptor.preferredFontDescriptor(forTextStyle: .caption1).pointSize, weight: .medium)
+        field.font = NSFont
+            .systemFont(ofSize: NSFontDescriptor
+                .preferredFontDescriptor(forTextStyle: .caption1).pointSize,
+                                         weight: .medium)
         field.translatesAutoresizingMaskIntoConstraints = false
         return field
     }()
@@ -66,7 +74,8 @@ class ProgramsTableViewCell: NSTableCellView {
         super.init(frame: frameRect)
 
         // wantsLayer = true
-        // layer?.backgroundColor = NSColor.yellow.withAlphaComponent(0.2).cgColor
+        // layer?.backgroundColor =
+        //     NSColor.yellow.withAlphaComponent(0.2).cgColor
 
         addSubview(indexLabel)
         addSubview(appIconImage)
@@ -77,21 +86,33 @@ class ProgramsTableViewCell: NSTableCellView {
         NSLayoutConstraint.activate([
             indexLabel.widthAnchor.constraint(equalToConstant: 25),
             indexLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            indexLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: ViewConstants.spacing5),
+            indexLabel.leadingAnchor
+                .constraint(equalTo: leadingAnchor,
+                            constant: ViewConstants.spacing5),
 
             appIconImage.widthAnchor.constraint(equalToConstant: 40),
             appIconImage.heightAnchor.constraint(equalToConstant: 40),
             appIconImage.topAnchor.constraint(equalTo: topAnchor),
             appIconImage.bottomAnchor.constraint(equalTo: bottomAnchor),
-            appIconImage.leadingAnchor.constraint(equalTo: indexLabel.trailingAnchor),
+            appIconImage.leadingAnchor
+                .constraint(equalTo: indexLabel.trailingAnchor),
 
-            titleField.topAnchor.constraint(equalTo: appIconImage.topAnchor, constant: ViewConstants.spacing2),
-            titleField.leadingAnchor.constraint(equalTo: appIconImage.trailingAnchor, constant: ViewConstants.spacing5),
-            titleField.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -ViewConstants.spacing5),
+            titleField.topAnchor
+                .constraint(equalTo: appIconImage.topAnchor,
+                            constant: ViewConstants.spacing2),
+            titleField.leadingAnchor
+                .constraint(equalTo: appIconImage.trailingAnchor,
+                            constant: ViewConstants.spacing5),
+            titleField.trailingAnchor
+                .constraint(equalTo: trailingAnchor,
+                            constant: -ViewConstants.spacing5),
 
-            progPathLabel.topAnchor.constraint(equalTo: titleField.bottomAnchor),
-            progPathLabel.leadingAnchor.constraint(equalTo: titleField.leadingAnchor),
-            progPathLabel.trailingAnchor.constraint(equalTo: titleField.trailingAnchor),
+            progPathLabel.topAnchor
+                .constraint(equalTo: titleField.bottomAnchor),
+            progPathLabel.leadingAnchor
+                .constraint(equalTo: titleField.leadingAnchor),
+            progPathLabel.trailingAnchor
+                .constraint(equalTo: titleField.trailingAnchor),
         ])
     }
 

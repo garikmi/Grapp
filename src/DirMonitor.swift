@@ -25,22 +25,34 @@ class DirMonitor {
         var context = FSEventStreamContext()
         context.info = Unmanaged.passUnretained(self).toOpaque()
 
-        guard let stream = FSEventStreamCreate(nil, { (stream, info, numEvents, eventPaths, eventFlags, eventIds) in
-                let pathsBase         = eventPaths .assumingMemoryBound(to: UnsafePointer<CChar>.self)
-                let pathsBuffer       = UnsafeBufferPointer(start: pathsBase, count: numEvents)
-                let flagsBuffer       = UnsafeBufferPointer(start: eventFlags, count: numEvents)
-                // let eventIDsBuffer = UnsafeBufferPointer(start: eventIds, count: numEvents)
+        guard let stream = FSEventStreamCreate(nil,
+            { (stream, info, numEvents, eventPaths, eventFlags, eventIds) in
+                let pathsBase = eventPaths
+                    .assumingMemoryBound(to: UnsafePointer<CChar>.self)
+                let pathsBuffer =
+                    UnsafeBufferPointer(start: pathsBase, count: numEvents)
+                let flagsBuffer =
+                    UnsafeBufferPointer(start: eventFlags, count: numEvents)
+                // let eventIDsBuffer =
+                //     UnsafeBufferPointer(start: eventIds, count: numEvents)
 
                 for i in 0..<numEvents {
                     let flags = Int(flagsBuffer[i])
-                    let url: URL = URL(fileURLWithFileSystemRepresentation: pathsBuffer[i], isDirectory: true, relativeTo: nil)
+                    let url: URL =
+                        URL(fileURLWithFileSystemRepresentation: pathsBuffer[i],
+                            isDirectory: true, relativeTo: nil)
 
-                    // Since this is a directory monitor, we discard file events.
-                    if !containsFlags(key: kFSEventStreamEventFlagItemIsDir, in: flags) || !url.path.hasSuffix(".app") {
+                    // Since this is a directory monitor, we discard file
+                    // events.
+                    if !containsFlags(key: kFSEventStreamEventFlagItemIsDir,
+                                      in: flags) ||
+                        !url.path.hasSuffix(".app")
+                    {
                         continue
                     }
 
-                    // NOTE: The delegate callback should always be called on main thread!
+                    // NOTE: The delegate callback should always be called
+                    //       on main thread!
                     DispatchQueue.main.async {
                         delegate.fsEventTriggered(url.path, flags)
                     }
@@ -50,7 +62,8 @@ class DirMonitor {
             self.dirs, // [path as NSString] as NSArray,
             UInt64(kFSEventStreamEventIdSinceNow),
             2.0,
-            FSEventStreamCreateFlags(kFSEventStreamCreateFlagFileEvents) // FSEventStreamCreateFlags(kFSEventStreamCreateFlagNone)
+            // FSEventStreamCreateFlags(kFSEventStreamCreateFlagNone)
+            FSEventStreamCreateFlags(kFSEventStreamCreateFlagFileEvents)
         ) else {
             return false
         }
