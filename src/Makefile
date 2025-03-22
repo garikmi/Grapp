@@ -91,17 +91,6 @@ $(EXEC).app: $(EXEC)
 
 all: $(EXEC).app
 
-kill:
-	-pkill $(EXEC)
-
-run: kill all
-	./$(EXEC)
-
-open: kill all
-	open $(EXEC).app
-
 clean:
 	rm -rf $(EXEC) $(EXEC).app arm64 x86_64
 	mkdir arm64 x86_64
-
-clean-all: clean
