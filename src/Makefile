@@ -21,6 +21,8 @@ LIBS =
 
 FRAMEWORKS = -framework AppKit -framework ServiceManagement
 
+default: $(EXEC).app
+
 # HACK: Target is getting touched because timestamps of the generated
 # 	    object file don't change unless there's an actual change in the
 #       outputted object code. This results in this target running every
@@ -88,8 +90,6 @@ $(EXEC).app: $(EXEC)
 		-s ${APPLE_DEVELOPMENT} -f --timestamp -o runtime $(EXEC).app, \
 			codesign -s ${APPLE_DEVELOPER_ID_APPLICATION} -f --timestamp \
 				-o runtime $(EXEC).app)
-
-all: $(EXEC).app
 
 clean:
 	rm -rf $(EXEC) $(EXEC).app arm64 x86_64
