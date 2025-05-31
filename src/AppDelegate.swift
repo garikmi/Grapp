@@ -16,7 +16,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         window.delegate = self
 
         // NOTE: Here we check wether the program was launched by the
-        //       system. If it was not, then display the window.
+        //       system (e.g. launch-at-login). If it was not, then display
+        //       the window.
         if let event = NSAppleEventManager.shared().currentAppleEvent,
            !(event.eventID == kAEOpenApplication &&
                 event.paramDescriptor(forKeyword: keyAEPropData)?

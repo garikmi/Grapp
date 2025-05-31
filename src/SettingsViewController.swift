@@ -16,18 +16,7 @@ class SettingsViewController: NSViewController,
 
     private var paths: [String] = []
 
-    // PERF: This is very slow to initialize because it creates a new
-    //       process. This also cannot be done on a separate thread. This
-    //       sucks because the program now takes considerably longer to
-    //       launch.
-    private let dirPicker: NSOpenPanel = {
-        let panel = NSOpenPanel()
-        panel.message = "Select a directory to search applications in . . ."
-        panel.canChooseDirectories = true
-        panel.canChooseFiles = false
-        panel.allowsMultipleSelection = false
-        return panel
-    }()
+    private var dirPicker: NSOpenPanel?
 
     private var shortcutsLabel: NSTextField = {
         let textField = NSTextField(labelWithString: "Shortcut")
@@ -528,8 +517,7 @@ class SettingsViewController: NSViewController,
             pathsTableView.scrollRowToVisible(row)
             pathsTableView.selectRowIndexes(IndexSet(integer: row),
                                             byExtendingSelection: false)
-            (
-                pathsTableView
+            (pathsTableView
                     .view(atColumn: 0, row: row, makeIfNecessary: false
             ) as? PathsTableCellView)?.startEditing()
             break
@@ -586,6 +574,15 @@ class SettingsViewController: NSViewController,
     }
 
     func titleFieldTextChanged(tag: Int, text: String) {
+        if let cell = pathsTableView.view(atColumn: 0, row: tag,
+                            makeIfNecessary: false) as? PathsTableCellView
+        {
+            if isDirectory(text) {
+                cell.titleField.textColor = NSColor.green
+            } else {
+                cell.titleField.textColor = NSColor.red
+            }
+        }
     }
 
     func keyWasSet(to keyCode: Int) {
@@ -593,12 +590,27 @@ class SettingsViewController: NSViewController,
     }
 
     func selectionButtonClicked(tag: Int) {
+        if dirPicker == nil {
+            dirPicker = NSOpenPanel()
+            dirPicker!.message = "Select a directory to search applications in..."
+            dirPicker!.canChooseDirectories = true
+            dirPicker!.canChooseFiles = false
+            dirPicker!.allowsMultipleSelection = false
+        }
+
+        // WARN:
+        // FIX: THere is a bug where the program crashes when adding a new
+        // path. This happens because the settings popup is closed before
+        // displaying the selection modal, as a result the new path item
+        // is cleared (well, b/c it's empty) and the path gets set into
+        // non-existent memory which results in segmentation fault.
+
         NSRunningApplication.current.activate(options: .activateAllWindows)
         delegate.window.level = .normal
         delegate.aboutWindow.performClose(nil)
 
-        if dirPicker.runModal() == .OK {
-            if let url = dirPicker.url {
+        if dirPicker!.runModal() == .OK {
+            if let url = dirPicker!.url {
                 paths[tag] = url.path
                 pathsTableView.reloadData()
             }

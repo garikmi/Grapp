@@ -12,8 +12,8 @@ SRCMODULES = Helpers.swift EditableNSTextField.swift EventMonitor.swift \
 			 SettingsViewController.swift HotKeyManager.swift \
 			 KeyDetectorButton.swift PathManager.swift \
 			 PathsTableCellView.swift ProgramsTable.swift ShadowView.swift \
-			 DirMonitor.swift MenulessWindow.swift AboutViewController.swift \
-			 AppDelegate.swift main.swift
+			 DirMonitor.swift MenulessWindow.swift \
+			 AboutViewController.swift AppDelegate.swift main.swift
 ARMOBJMODULES = $(addprefix ./arm64/,$(SRCMODULES:.swift=.o))
 X86OBJMODULES = $(addprefix ./x86_64/,$(SRCMODULES:.swift=.o))
 
@@ -71,6 +71,7 @@ ifdef UNIVERSAL
 		./x86_64/main.o $(filter-out ./x86_64/main.o, $(X86OBJMODULES)) -o $@
 endif
 
+# TODO: The universal build doesn't seem to compile x86_64.
 ifdef UNIVERSAL
 $(EXEC): ./arm64/$(EXEC) ./x86_64/$(EXEC)
 	@lipo -create -output $(EXEC) $^

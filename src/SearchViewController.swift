@@ -1,9 +1,11 @@
 import AppKit
 import Carbon
 
-// NOTE: This is the corner radius of the backgrounView view that acts as a window frame and an NSViewController's view that clips all elements inside of it.
+// NOTE: This is the corner radius of the backgrounView view that acts as
+// a window frame.
 fileprivate let windowCornerRadius = 15.0
 
+// NOTE: This is the maximum number of elements shown when searching.
 fileprivate let maxItems = 20
 
 class SearchViewController: NSViewController, NSTextFieldDelegate,
@@ -205,10 +207,10 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // NOTE: This needs removeObserver on deinit? Well, technically we
-        //       don't care because this view controller will exist
-        //       throughout the whole life of the program. When the 
-        //       program gets killed, the OS will clear this.
+        // NOTE: This needs removeObserver on deinit. However, technically
+        //       it doesn't matter because if this view controller doesn't
+        //       exists, then the whole program is pointless. So, let the OS
+        //       clean it up when the program is killed.
         DistributedNotificationCenter.default
             .addObserver(self, selector: #selector(osThemeChanged(sender:)),
                          name: NSNotification
@@ -237,7 +239,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
             if let controller = self {
                 if modsContains(keys: OSCtrl, in: modifiers) &&
                     key == kVK_ANSI_P ||
-                   modsContainsNone(in: modifiers) && key == kVK_UpArrow
+                    modsContainsNone(in: modifiers) && key == kVK_UpArrow
                 {
                     controller.programsTableViewSelection -= 1
                 } else if modsContains(keys: OSCtrl, in: modifiers) &&
@@ -318,7 +320,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         centerWindow()
 
         view.window?.makeFirstResponder(searchInput)
-        // searchInput should select all text whenever window appears.
+        // searchInput select all text whenever window appears.
         NSApp.sendAction(#selector(NSResponder.selectAll(_:)), to: nil,
                          from: self)
     }
@@ -402,14 +404,12 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
                         programsList[listIndex].path = prog.path
                         programsList[listIndex].name = prog.name
                         programsList[listIndex].ext = prog.ext
-                        programsList[listIndex].img =
-                            NSWorkspace.shared
-                                .icon(forFile: URL(
-                                    fileURLWithPath: prog.path
-                                )
-                                    .appendingPathComponent(
-                                        prog.name+prog.ext).path
-                                    )
+                        programsList[listIndex].img = NSWorkspace.shared
+                            .icon(forFile: URL(
+                                fileURLWithPath: prog.path
+                            ).appendingPathComponent(
+                                    prog.name+prog.ext).path
+                            )
                         listIndex += 1
                     }
                 }
