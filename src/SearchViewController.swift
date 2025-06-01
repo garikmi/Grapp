@@ -9,8 +9,7 @@ fileprivate let windowCornerRadius = 15.0
 fileprivate let maxItems = 20
 
 class SearchViewController: NSViewController, NSTextFieldDelegate,
-                            NSPopoverDelegate, NSTableViewDataSource,
-                            NSTableViewDelegate
+                            NSTableViewDataSource, NSTableViewDelegate
 {
     private var keyboardEvents: EventMonitor?
 
@@ -19,13 +18,6 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
     private var programsListCells: [ProgramsTableViewCell] = []
 
     private var programsTableViewSelection = 0
-
-    private var settingsPopover: NSPopover = {
-        let popover = NSPopover()
-        popover.contentViewController = SettingsViewController()
-        popover.behavior = .transient
-        return popover
-    }()
 
     private var shadowView: ShadowView = {
         let view = ShadowView()
@@ -301,7 +293,6 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
             return event
         }
 
-        settingsPopover.delegate = self
         searchInput.delegate = self
 
         tableScrollView.documentView = programsTableView
@@ -364,8 +355,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
     @objc
     func openSettings() {
-        settingsPopover.show(relativeTo: settingsButton.bounds,
-                             of: settingsButton, preferredEdge: .maxY)
+        delegate.showSettingsWindow()
     }
 
     @objc

@@ -6,9 +6,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     let fileManager = FileManager.default
 
     let window = PopoverPanel(viewController: SearchViewController())
+    let settingsWindow =
+        MenulessWindow(viewController: SettingsViewController())
     let aboutWindow = MenulessWindow(viewController: AboutViewController())
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        settingsWindow.title = "Settings"
         aboutWindow.level = .statusBar
 
         PathManager.shared.updateIndex()
@@ -16,8 +19,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         window.delegate = self
 
         // NOTE: Here we check wether the program was launched by the
-        //       system (e.g. launch-at-login). If it was not, then display
-        //       the window.
+        // system (e.g. launch-at-login). If it was not, then display the
+        // window.
         if let event = NSAppleEventManager.shared().currentAppleEvent,
            !(event.eventID == kAEOpenApplication &&
                 event.paramDescriptor(forKeyword: keyAEPropData)?
@@ -70,7 +73,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication,
                                        hasVisibleWindows: Bool) -> Bool {
         if !window.isKeyWindow {
-            window.makeKeyAndOrderFront(nil)
+            if !settingsWindow.isVisible {
+                window.makeKeyAndOrderFront(nil)
+            }
         }
 
         return true
@@ -99,8 +104,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         aboutWindow.makeKeyAndOrderFront(nil)
     }
 
-    // NOTE: This function act like a callback is triggered by DirMonitor
-    //       when file system events occur.
+    public func showSettingsWindow() {
+        settingsWindow.makeKeyAndOrderFront(nil)
+    }
+
+    // NOTE: This function act like a callback and is triggered by
+    // DirMonitor when file system events occur.
     public func fsEventTriggered(_ path: String, _ flags: Int) {
         if containsFlags(key: kFSEventStreamEventFlagItemCreated, in: flags) ||
            containsFlags(key: kFSEventStreamEventFlagItemRemoved, in: flags) ||

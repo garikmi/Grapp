@@ -2,11 +2,15 @@ import AppKit
 import Carbon
 import ServiceManagement
 
+// TODO: Rework the paths table and selection. Right now, it is very
+// disfunctional and error-prone.
 class SettingsViewController: NSViewController,
                               NSTextFieldDelegate, KeyDetectorButtonDelegate,
                               NSTableViewDataSource, NSTableViewDelegate,
                               PathsTableCellViewDelegate
 {
+    private var keyboardEvents: EventMonitor?
+
     private var recording = false
 
     // NOTE: This is the default shortcut. If you were to change it, don't
@@ -346,6 +350,20 @@ class SettingsViewController: NSViewController,
         launchAtLoginToggle.target = self
         launchAtLoginToggle.action = #selector(affectLaunchAtLogin(_:))
 
+        keyboardEvents = LocalEventMonitor(mask: [.keyDown])
+        { [weak self] event in
+            let key = event.keyCode
+            let modifiers = event.modifierFlags.rawValue
+
+            if modsContains(keys: OSCmd, in: modifiers) &&
+                key == kVK_ANSI_Q || modsContainsNone(in: modifiers)
+            {
+                NSApplication.shared.terminate(self)
+            }
+
+            return event
+        }
+
         addSubviews()
         setConstraints()
     }
@@ -372,10 +390,17 @@ class SettingsViewController: NSViewController,
 
     override func viewDidAppear() {
         super.viewDidAppear()
+
+        keyboardEvents?.start()
+
+        NSApp.setActivationPolicy(.regular)
+        self.view.window?.center()
     }
 
     override func viewWillDisappear() {
         super.viewWillDisappear()
+
+        keyboardEvents?.stop()
 
         HotKeyManager.shared.registerHotKey(key: keyCode,
                                             modifiers: modifiers)
@@ -397,6 +422,12 @@ class SettingsViewController: NSViewController,
         }
         PathManager.shared.updateIndex()
         PathManager.shared.savePaths()
+    }
+
+    override func viewDidDisappear() {
+        super.viewDidDisappear()
+
+        NSApp.setActivationPolicy(.accessory)
     }
 
     override func loadView() {
@@ -578,9 +609,9 @@ class SettingsViewController: NSViewController,
                             makeIfNecessary: false) as? PathsTableCellView
         {
             if isDirectory(text) {
-                cell.titleField.textColor = NSColor.green
+                cell.titleField.textColor = NSColor.systemGreen
             } else {
-                cell.titleField.textColor = NSColor.red
+                cell.titleField.textColor = NSColor.systemRed
             }
         }
     }
@@ -599,7 +630,7 @@ class SettingsViewController: NSViewController,
         }
 
         // WARN:
-        // FIX: THere is a bug where the program crashes when adding a new
+        // FIX: There is a bug where the program crashes when adding a new
         // path. This happens because the settings popup is closed before
         // displaying the selection modal, as a result the new path item
         // is cleared (well, b/c it's empty) and the path gets set into

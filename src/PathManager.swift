@@ -13,8 +13,8 @@ final class PathManager {
     private var dirMonitor: DirMonitor?
 
     // NOTE: These are default paths where MacOS's default programs are
-    //       stored. This list should be updated if something changes in
-    //       newer MacOS version.
+    // stored. This list should be updated if something changes in newer
+    // MacOS versions.
     static let defaultPaths = [
         "/Applications",
         "/System/Applications",
@@ -102,8 +102,8 @@ final class PathManager {
     }
 
     // PERF: Optimize some more. Do not rebuild the entire array, instead
-    //       remove or add only needed programs. Thereby, limiting the
-    //       amount of allocations.
+    // remove or add only needed programs. Thereby, limiting the amount of
+    // allocations.
     public func rebuildIndex(at path: String) {
         paths[path] = []
         paths[path] = indexDirs(at: path, deepness: 2)
@@ -141,7 +141,7 @@ final class PathManager {
         refreshFilesystemWatchers()
     }
 
-    // Touch paths to load them into CPUs cache.
+    // Touch paths to load them into CPU's cache for performance.
     public func touchPaths() {
         for path in paths {
             _ = path
