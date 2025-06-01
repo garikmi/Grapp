@@ -281,8 +281,8 @@ class SettingsViewController: NSViewController,
             pathsLabel.leadingAnchor
                 .constraint(equalTo: shortcutsLabel.leadingAnchor),
 
-            tableScrollView.widthAnchor.constraint(equalToConstant: 350),
-            tableScrollView.heightAnchor.constraint(equalToConstant: 150),
+            tableScrollView.widthAnchor.constraint(equalToConstant: 500),
+            tableScrollView.heightAnchor.constraint(equalToConstant: 200),
             tableScrollView.topAnchor
                 .constraint(equalTo: pathsLabel.bottomAnchor),
             tableScrollView.leadingAnchor

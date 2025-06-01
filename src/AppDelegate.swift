@@ -100,12 +100,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     public func showAboutWindow() {
-        NSApplication.shared.activate(ignoringOtherApps: true)
         aboutWindow.makeKeyAndOrderFront(nil)
+        NSApplication.shared.activate(ignoringOtherApps: true)
     }
 
     public func showSettingsWindow() {
         settingsWindow.makeKeyAndOrderFront(nil)
+        NSApplication.shared.activate(ignoringOtherApps: true)
     }
 
     // NOTE: This function act like a callback and is triggered by
