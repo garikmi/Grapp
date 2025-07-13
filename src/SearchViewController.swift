@@ -61,6 +61,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
         textField.lineBreakMode = .byTruncatingHead
         textField.focusRingType = .none
         textField.placeholderString = "Program Search"
+        textField.isAutomaticTextCompletionEnabled = false
         textField.bezelStyle = .roundedBezel
         textField.font = NSFont
             .systemFont(ofSize: NSFontDescriptor
@@ -346,7 +347,9 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
 
     private func reloadProgramsTableViewData() {
         if listIndex > 0 {
-            tableViewHeightAnchor?.constant = 210
+            // TODO: Why is this located here, randomly? Make it a global
+            // config variable.
+            tableViewHeightAnchor?.constant = 250
         } else {
             tableViewHeightAnchor?.constant = 0
         }

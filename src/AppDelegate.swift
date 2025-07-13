@@ -18,6 +18,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         window.delegate = self
 
+        // TODO: Move down.
         // NOTE: Here we check wether the program was launched by the
         // system (e.g. launch-at-login). If it was not, then display the
         // window.

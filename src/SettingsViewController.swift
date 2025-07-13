@@ -5,16 +5,17 @@ import ServiceManagement
 // TODO: Rework the paths table and selection. Right now, it is very
 // disfunctional and error-prone.
 class SettingsViewController: NSViewController,
-                              NSTextFieldDelegate, KeyDetectorButtonDelegate,
-                              NSTableViewDataSource, NSTableViewDelegate,
-                              PathsTableCellViewDelegate
+    NSTextFieldDelegate, KeyDetectorButtonDelegate, NSTableViewDataSource,
+    NSTableViewDelegate, PathsTableCellViewDelegate
 {
     private var keyboardEvents: EventMonitor?
 
     private var recording = false
 
     // NOTE: This is the default shortcut. If you were to change it, don't
-    //       forget to change other places in this file and delegate, too.
+    // forget to change other places in this file and delegate, too.
+    // TODO: Come up with a way where we don't have to specify these in
+    // multiple locations.
     private var keyCode = Int(kVK_Space)
     private var modifiers = Int(optionKey)
 
@@ -356,7 +357,7 @@ class SettingsViewController: NSViewController,
             let modifiers = event.modifierFlags.rawValue
 
             if modsContains(keys: OSCmd, in: modifiers) &&
-                key == kVK_ANSI_Q || modsContainsNone(in: modifiers)
+                key == kVK_ANSI_Q
             {
                 NSApplication.shared.terminate(self)
             }
@@ -623,7 +624,7 @@ class SettingsViewController: NSViewController,
     func selectionButtonClicked(tag: Int) {
         if dirPicker == nil {
             dirPicker = NSOpenPanel()
-            dirPicker!.message = "Select a directory to search applications in..."
+            dirPicker!.message = "Select a directory with applications..."
             dirPicker!.canChooseDirectories = true
             dirPicker!.canChooseFiles = false
             dirPicker!.allowsMultipleSelection = false
@@ -663,8 +664,7 @@ class SettingsViewController: NSViewController,
     func tableView(_ tableView: NSTableView,
         viewFor tableColumn: NSTableColumn?, row: Int) -> NSView?
     {
-        let rect = NSRect(x: 0, y: 0, width: tableColumn!.width,
-                                      height: 20)
+        let rect = NSRect(x: 0, y: 0, width: tableColumn!.width, height: 20)
         let cell = PathsTableCellView(frame: rect)
         cell.titleField.stringValue = paths[row]
         cell.delegate = self

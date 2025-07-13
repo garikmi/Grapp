@@ -134,7 +134,6 @@ final class PathManager {
     }
 
     public func updateIndex() {
-        print("updateIndex()")
         for path in paths {
             rebuildIndex(at: path.key)
         }

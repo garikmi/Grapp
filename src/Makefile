@@ -86,11 +86,11 @@ $(EXEC).app: $(EXEC)
 	mkdir -p $@/Contents/Resources/ && \
 	cp Info.plist $@/Contents/ && \
 	cp resources/AppIcon.icns $@/Contents/Resources/ && \
-	cp $(EXEC) $@/Contents/MacOS/ && \
-	$(if $(DEBUG), codesign --entitlements Grapp.entitlements \
-		-s ${APPLE_DEVELOPMENT} -f --timestamp -o runtime $(EXEC).app, \
-			codesign -s ${APPLE_DEVELOPER_ID_APPLICATION} -f --timestamp \
-				-o runtime $(EXEC).app)
+	cp $(EXEC) $@/Contents/MacOS/
+	# $(if $(DEBUG), codesign --entitlements Grapp.entitlements \
+	# 	-s ${APPLE_DEVELOPMENT} -f --timestamp -o runtime $(EXEC).app, \
+	# 		codesign -s ${APPLE_DEVELOPER_ID_APPLICATION} -f --timestamp \
+	# 			-o runtime $(EXEC).app)
 
 clean:
 	rm -rf $(EXEC) $(EXEC).app arm64 x86_64

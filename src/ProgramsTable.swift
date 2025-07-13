@@ -22,6 +22,7 @@ class ProgramsTableViewCell: NSTableCellView {
 
     public var indexLabel: NSTextField = {
         let field = NSTextField(labelWithString: "-")
+        field.isEditable = false
         field.alignment = .center
 
         // field.drawsBackground = true
@@ -49,6 +50,7 @@ class ProgramsTableViewCell: NSTableCellView {
 
     public var titleField: NSTextField = {
         let field = NSTextField()
+        field.isEditable = false
         field.isBordered = false
         field.drawsBackground = false
         field.lineBreakMode = .byTruncatingTail
@@ -59,6 +61,7 @@ class ProgramsTableViewCell: NSTableCellView {
 
     public var progPathLabel: NSTextField = {
         let field = NSTextField()
+        field.isEditable = false
         field.isBordered = false
         field.drawsBackground = false
         field.lineBreakMode = .byTruncatingTail
