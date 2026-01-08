@@ -2,6 +2,41 @@ import Cocoa
 import Carbon
 import ServiceManagement
 
+class ClipboardMonitor {
+    private var timer: Timer?
+    private var lastChangeCount: Int = NSPasteboard.general.changeCount
+
+    func startMonitoring(interval: TimeInterval = 0.5) {
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+            print("CALLED")
+            self?.checkForChanges()
+        }
+    }
+
+    func stopMonitoring() {
+        timer?.invalidate()
+        timer = nil
+    }
+
+    private func checkForChanges() {
+        print("CHECKING")
+        let pasteboard = NSPasteboard.general
+        if pasteboard.changeCount != lastChangeCount {
+            lastChangeCount = pasteboard.changeCount
+            handlePasteboardChange(pasteboard)
+        }
+    }
+
+    private func handlePasteboardChange(_ pasteboard: NSPasteboard) {
+        if let copiedString = pasteboard.string(forType: .string) {
+            print("Clipboard changed: \(copiedString)")
+        } else {
+            print("Clipboard changed (non-string content)")
+        }
+    }
+}
+
+
 class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     let fileManager = FileManager.default
 
@@ -10,7 +45,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         MenulessWindow(viewController: SettingsViewController())
     let aboutWindow = MenulessWindow(viewController: AboutViewController())
 
+    var monitor: ClipboardMonitor?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+
+
+monitor = ClipboardMonitor()
+monitor?.startMonitoring()
+
+
+
+
+
+
         settingsWindow.title = "Settings"
         aboutWindow.level = .statusBar
 

@@ -2,21 +2,14 @@ import AppKit
 
 // TODO: Change to appropriate links.
 fileprivate enum AboutLinks {
-    // static let website = "https://cmdbar.app"
+    static let website = "https://cmdbar.rednera.com"
     // static let documentation = "https://cmdbar.app/documentation"
-    // static let privacy = "https://cmdbar.app/#privacy-policy"
-    static let author = "https://kolokolnikov.org"
+    static let privacy = "https://cmdbar.rednera.com/#privacy-policy"
+    static let author = "https://kolokolnikov.dev"
 }
 
 enum Strings {
-    static let copyright = "Copyright © 2024\nGarikMI. All rights reserved."
-    static let evaluationTitle = "License - Evaluation"
-    static let evaluationMessage = "You are currently using evaluation license. CmdBar will quit after 20 minutes. If you already own a license, enter it below or purchase a license."
-    static let activate = "Activate"
-    static let proTitle = "License - Activated"
-    static let proMessage = "Thank you for purchasing CmdBar! Enjoy!"
-    static let deactivate = "Deactivate"
-    static let activating = "Activating..."
+    static let copyright = "Copyright © 2026 Rednera.\nAll rights reserved."
 }
 
 class AboutViewController: NSViewController, NSTextFieldDelegate {
@@ -83,25 +76,25 @@ class AboutViewController: NSViewController, NSTextFieldDelegate {
         return textField
     }()
 
-    private var authorButton: NSButton = {
-        let button = NSButton()
-        button.title = "Author"
-        button.sizeToFit()
-        button.bezelStyle = .rounded
-        button.action = #selector(author)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-
-    // private var privacyButton: NSButton = {
+    // private var authorButton: NSButton = {
     //     let button = NSButton()
-    //     button.title = "Privacy Policy"
+    //     button.title = "Author"
     //     button.sizeToFit()
     //     button.bezelStyle = .rounded
-    //     button.action = #selector(privacy)
+    //     button.action = #selector(author)
     //     button.translatesAutoresizingMaskIntoConstraints = false
     //     return button
     // }()
+
+    private var privacyButton: NSButton = {
+        let button = NSButton()
+        button.title = "Privacy Policy"
+        button.sizeToFit()
+        button.bezelStyle = .rounded
+        button.action = #selector(privacy)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
 
     // private var documentationButton: NSButton = {
     //     let button = NSButton()
@@ -112,16 +105,16 @@ class AboutViewController: NSViewController, NSTextFieldDelegate {
     //     button.translatesAutoresizingMaskIntoConstraints = false
     //     return button
     // }()
-    //
-    // private var websiteButton: NSButton = {
-    //     let button = NSButton()
-    //     button.title = "CmdBar.app"
-    //     button.sizeToFit()
-    //     button.bezelStyle = .rounded
-    //     button.action = #selector(website)
-    //     button.translatesAutoresizingMaskIntoConstraints = false
-    //     return button
-    // }()
+
+    private var websiteButton: NSButton = {
+        let button = NSButton()
+        button.title = "Grapp"
+        button.sizeToFit()
+        button.bezelStyle = .rounded
+        button.action = #selector(website)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
 
     private var buttonsContainer: NSLayoutGuide = {
         let container = NSLayoutGuide()
@@ -139,10 +132,10 @@ class AboutViewController: NSViewController, NSTextFieldDelegate {
 
         // Buttons
         view.addLayoutGuide(buttonsContainer)
-        // view.addSubview(privacyButton)
+        view.addSubview(privacyButton)
         // view.addSubview(documentationButton)
-        // view.addSubview(websiteButton)
-        view.addSubview(authorButton)
+        view.addSubview(websiteButton)
+        // view.addSubview(authorButton)
 
         setupConstraints()
     }
@@ -208,51 +201,51 @@ class AboutViewController: NSViewController, NSTextFieldDelegate {
             buttonsContainer.centerXAnchor
                 .constraint(equalTo: view.centerXAnchor),
 
-            authorButton.topAnchor
-                .constraint(equalTo: buttonsContainer.topAnchor),
-            authorButton.bottomAnchor
-                .constraint(equalTo: buttonsContainer.bottomAnchor),
-            authorButton.leadingAnchor
-                .constraint(equalTo: buttonsContainer.leadingAnchor),
-            authorButton.trailingAnchor
-                .constraint(equalTo: buttonsContainer.trailingAnchor),
-
-            // privacyButton.topAnchor
+            // authorButton.topAnchor
             //     .constraint(equalTo: buttonsContainer.topAnchor),
-            // privacyButton.bottomAnchor
+            // authorButton.bottomAnchor
             //     .constraint(equalTo: buttonsContainer.bottomAnchor),
-            // privacyButton.leadingAnchor
+            // authorButton.leadingAnchor
             //     .constraint(equalTo: buttonsContainer.leadingAnchor),
-            //
+            // authorButton.trailingAnchor
+            //     .constraint(equalTo: buttonsContainer.trailingAnchor),
+
+            privacyButton.topAnchor
+                .constraint(equalTo: buttonsContainer.topAnchor),
+            privacyButton.bottomAnchor
+                .constraint(equalTo: buttonsContainer.bottomAnchor),
+            privacyButton.leadingAnchor
+                .constraint(equalTo: buttonsContainer.leadingAnchor),
+
             // documentationButton.firstBaselineAnchor
             //     .constraint(equalTo: privacyButton.firstBaselineAnchor),
             // documentationButton.leadingAnchor
             //     .constraint(equalTo: privacyButton.trailingAnchor,
             //                 constant: ViewConstants.spacing10),
-            //
-            // websiteButton.firstBaselineAnchor
-            //     .constraint(equalTo: privacyButton.firstBaselineAnchor),
-            // websiteButton.leadingAnchor
-            //     .constraint(equalTo: documentationButton.trailingAnchor,
-            //                 constant: ViewConstants.spacing10),
-            // websiteButton.trailingAnchor
-            //     .constraint(equalTo: buttonsContainer.trailingAnchor),
+
+            websiteButton.firstBaselineAnchor
+                .constraint(equalTo: privacyButton.firstBaselineAnchor),
+            websiteButton.leadingAnchor
+                .constraint(equalTo: privacyButton.trailingAnchor,
+                            constant: ViewConstants.spacing10),
+            websiteButton.trailingAnchor
+                .constraint(equalTo: buttonsContainer.trailingAnchor),
         ])
     }
 
-    @objc private func author() {
-        NSWorkspace.shared.open(URL(string: AboutLinks.author)!)
+    // @objc private func author() {
+    //     NSWorkspace.shared.open(URL(string: AboutLinks.author)!)
+    // }
+
+    @objc private func privacy() {
+        NSWorkspace.shared.open(URL(string: AboutLinks.privacy)!)
     }
 
-    // @objc private func privacy() {
-    //     NSWorkspace.shared.open(URL(string: AboutLinks.privacy)!)
-    // }
-    //
     // @objc private func documentation() {
     //     NSWorkspace.shared.open(URL(string: AboutLinks.documentation)!)
     // }
-    //
-    // @objc private func website() {
-    //     NSWorkspace.shared.open(URL(string: AboutLinks.website)!)
-    // }
+
+    @objc private func website() {
+        NSWorkspace.shared.open(URL(string: AboutLinks.website)!)
+    }
 }

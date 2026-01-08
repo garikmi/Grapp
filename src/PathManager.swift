@@ -19,9 +19,9 @@ final class PathManager {
         "/Applications",
         "/System/Applications",
         "/System/Applications/Utilities",
-        "/System/Library/CoreServices",
-        "/Applications/Xcode.app/Contents/Applications",
-        "/System/Library/CoreServices/Applications"
+        "/System/Library/CoreServices", // TODO: NOTE: Remove this one?
+        "/System/Library/CoreServices/Applications",
+        "/Applications/Xcode.app/Contents/Applications"
     ]
     private(set) var paths: [String: [Program]] = [:]
 
