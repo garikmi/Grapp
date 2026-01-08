@@ -5,7 +5,7 @@ APP_SPECIFIC_PASSWORD := $(shell cat ./ids/APP_SPECIFIC_PASSWORD)
 exe = Grapp
 
 $(exe).app:
-	$(MAKE) -C src FLAGS=-O CFLAGS=-O3 default
+	$(MAKE) -C src FLAGS=-O CFLAGS=-O3 UNIVERSAL=1 default
 
 container:
 	ditto -c -k --keepParent ./src/$(exe).app ./build/$(exe).zip
