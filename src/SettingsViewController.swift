@@ -468,7 +468,7 @@ class SettingsViewController: NSViewController,
 
     @objc
     private func reset() {
-        keyCode   = Int(kVK_Space)
+        keyCode   = Int(kVK_Space) // TODO: Put into something like Defaults.swift file.
         modifiers = Int(optionKey)
         HotKeyManager.shared.registerHotKey(key: keyCode,
                                             modifiers: modifiers)
@@ -630,30 +630,15 @@ class SettingsViewController: NSViewController,
             dirPicker!.allowsMultipleSelection = false
         }
 
-        // WARN:
-        // FIX: There is a bug where the program crashes when adding a new
-        // path. This happens because the settings popup is closed before
-        // displaying the selection modal, as a result the new path item
-        // is cleared (well, b/c it's empty) and the path gets set into
-        // non-existent memory which results in segmentation fault.
-
-        NSRunningApplication.current.activate(options: .activateAllWindows)
-        delegate.window.level = .normal
-        delegate.aboutWindow.performClose(nil)
-
         if dirPicker!.runModal() == .OK {
             if let url = dirPicker!.url {
+                print("tag=\(tag) url.path=\(url.path)")
+                (pathsTableView
+                    .view(atColumn: 0, row: tag, makeIfNecessary: false
+                ) as? PathsTableCellView)?.titleField.stringValue = url.path
                 paths[tag] = url.path
                 pathsTableView.reloadData()
             }
-        }
-
-        delegate.window.level = .statusBar
-        delegate.window.makeKeyAndOrderFront(nil)
-        if let controller =
-            delegate.window.contentViewController as? SearchViewController
-        {
-            controller.openSettings()
         }
     }
 
@@ -666,6 +651,7 @@ class SettingsViewController: NSViewController,
     {
         let rect = NSRect(x: 0, y: 0, width: tableColumn!.width, height: 20)
         let cell = PathsTableCellView(frame: rect)
+        cell.titleField.textColor = isDirectory(paths[row]) ? NSColor.labelColor : NSColor.systemRed
         cell.titleField.stringValue = paths[row]
         cell.delegate = self
         cell.id = row

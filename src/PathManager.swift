@@ -19,7 +19,7 @@ final class PathManager {
         "/Applications",
         "/System/Applications",
         "/System/Applications/Utilities",
-        "/System/Library/CoreServices", // TODO: NOTE: Remove this one?
+        "/System/Library/CoreServices", // TODO: NOTE: Remove this one? This one contains Finder and Siri.
         "/System/Library/CoreServices/Applications",
         "/Applications/Xcode.app/Contents/Applications"
     ]
