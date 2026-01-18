@@ -554,6 +554,10 @@ class SettingsViewController: NSViewController,
             ) as? PathsTableCellView)?.startEditing()
             break
         case 1:
+            (pathsTableView
+                    .view(atColumn: 0, row: pathsTableView.selectedRow,
+                          makeIfNecessary: false
+            ) as? PathsTableCellView)?.stopEditing()
             if pathsTableView.selectedRow > -1 {
                 paths.remove(at: pathsTableView.selectedRow)
                 pathsTableView.reloadData()
