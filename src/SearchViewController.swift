@@ -480,9 +480,9 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
             )
         let attributedString = NSMutableAttributedString(string: app)
         attributedString
-            .addAttributes([.foregroundColor: NSColor.labelColor],
-                           range: rangeToHighlight)
-
+            .addAttributes([.backgroundColor:
+                             NSColor.systemYellow.withAlphaComponent(0.5)],
+                            range: rangeToHighlight)
         cell.titleField.attributedStringValue = attributedString
         cell.progPathLabel.stringValue = program.path
         cell.appIconImage.image = program.img

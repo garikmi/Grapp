@@ -54,7 +54,7 @@ class ProgramsTableViewCell: NSTableCellView {
         field.isBordered = false
         field.drawsBackground = false
         field.lineBreakMode = .byTruncatingTail
-        field.textColor = NSColor.secondaryLabelColor
+        field.textColor = NSColor.textColor
         field.translatesAutoresizingMaskIntoConstraints = false
         return field
     }()
