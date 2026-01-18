@@ -391,7 +391,7 @@ class SearchViewController: NSViewController, NSTextFieldDelegate,
                     if listIndex >= maxItems { break outerloop }
                     let prog = path.value[i]
 
-                    if prog.name.lowercased()
+                    if (prog.name.lowercased() + prog.ext)
                         .contains(searchInput.stringValue.lowercased())
                     {
                         programsList[listIndex].path = prog.path
