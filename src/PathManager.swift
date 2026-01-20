@@ -1,5 +1,7 @@
 import AppKit
 
+fileprivate let INDEX_DEEPNESS = 2
+
 struct Program {
     var path: String = ""
     var name: String = ""
@@ -106,7 +108,7 @@ final class PathManager {
     // allocations.
     public func rebuildIndex(at path: String) {
         paths[path] = []
-        paths[path] = indexDirs(at: path, deepness: 2)
+        paths[path] = indexDirs(at: path, deepness: INDEX_DEEPNESS)
     }
 
     public func indexDirs(at path: String, deepness: Int) -> [Program] {
